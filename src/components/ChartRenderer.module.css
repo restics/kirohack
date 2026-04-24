@@ -1,0 +1,67 @@
+.container {
+  margin-bottom: var(--space-6);
+}
+
+.chartTitle {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.chartWrapper {
+  position: relative;
+  width: 100%;
+  max-height: 350px;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  color: var(--color-muted);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+
+.toggleButton:hover {
+  background-color: var(--color-card);
+  color: var(--color-text);
+}
+
+.dataTable {
+  width: 100%;
+  margin-top: var(--space-3);
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.dataTable th,
+.dataTable td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid rgba(136, 136, 160, 0.2);
+}
+
+.dataTable th {
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dataTable td {
+  color: var(--color-text);
+}
+
+.dataTable tr:hover td {
+  background-color: rgba(79, 140, 255, 0.05);
+}
