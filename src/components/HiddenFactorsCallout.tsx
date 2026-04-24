@@ -6,15 +6,15 @@ interface HiddenFactorsCalloutProps {
 }
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
-  'Environmental Debt': { bg: 'rgba(34, 197, 94, 0.15)', text: '#22c55e' },
-  'Social Capital': { bg: 'rgba(168, 85, 247, 0.15)', text: '#a855f7' },
-  'Supply Chain Ripple': { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b' },
-  'Regulatory Risk': { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444' },
-  'Labor Market Shift': { bg: 'rgba(79, 140, 255, 0.15)', text: '#4f8cff' },
+  'Environmental Debt': { bg: 'rgba(16, 185, 129, 0.1)', text: '#10b981' },
+  'Social Capital': { bg: 'rgba(139, 92, 246, 0.1)', text: '#8b5cf6' },
+  'Supply Chain Ripple': { bg: 'rgba(245, 158, 11, 0.1)', text: '#f59e0b' },
+  'Regulatory Risk': { bg: 'rgba(239, 68, 68, 0.1)', text: '#ef4444' },
+  'Labor Market Shift': { bg: 'rgba(59, 130, 246, 0.1)', text: '#3b82f6' },
 };
 
 function getCategoryStyle(category: string) {
-  return CATEGORY_COLORS[category] || { bg: 'rgba(136, 136, 160, 0.15)', text: '#8888a0' };
+  return CATEGORY_COLORS[category] || { bg: 'rgba(113, 113, 122, 0.1)', text: '#71717a' };
 }
 
 export function HiddenFactorsCallout({ factors }: HiddenFactorsCalloutProps) {
@@ -22,13 +22,19 @@ export function HiddenFactorsCallout({ factors }: HiddenFactorsCalloutProps) {
 
   return (
     <section className={styles.container} aria-label="Hidden economic factors">
-      <h3 className={styles.heading}>
-        <span>🔍</span>
-        Hidden Economic Factors
-      </h3>
-      <p className={styles.subtitle}>
-        Economic impacts not explicitly covered by mainstream news — surfaced through cascading analysis.
-      </p>
+      <div className={styles.headerRow}>
+        <div className={styles.iconWrapper}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={styles.icon}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </div>
+        <div>
+          <h3 className={styles.heading}>Hidden Factors</h3>
+          <p className={styles.subtitle}>
+            Economic impacts not covered by mainstream reporting
+          </p>
+        </div>
+      </div>
 
       <div className={styles.factorsList}>
         {factors.map((factor) => {

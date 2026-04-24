@@ -20,10 +20,10 @@ export function SummaryPage() {
   if (status === 'loading') {
     return (
       <div className={styles.page}>
-        <h2 className={styles.pageTitle}>Step 4: Summary Infographic</h2>
+        <h2 className={styles.pageTitle}>Generating Summary</h2>
         <div className={styles.loading} role="status" aria-label="Loading summary">
           <div className={styles.spinner} />
-          <p className={styles.loadingText}>Generating summary infographic…</p>
+          <p className={styles.loadingText}>Creating your analysis report...</p>
         </div>
       </div>
     );
@@ -32,7 +32,7 @@ export function SummaryPage() {
   if (status === 'error') {
     return (
       <div className={styles.page}>
-        <h2 className={styles.pageTitle}>Step 4: Summary Infographic</h2>
+        <h2 className={styles.pageTitle}>Summary</h2>
         <div className={styles.error}>
           <p className={styles.errorMessage}>
             {state.error || 'Failed to generate summary. Please try again.'}
@@ -40,9 +40,8 @@ export function SummaryPage() {
           <button
             className={styles.retryButton}
             onClick={() => dispatch({ type: 'RETRY' })}
-            aria-label="Retry generating summary"
           >
-            Retry
+            Try Again
           </button>
         </div>
       </div>
@@ -55,11 +54,12 @@ export function SummaryPage() {
 
   return (
     <div className={styles.page}>
-      <h2 className={styles.pageTitle}>Step 4: Summary Infographic</h2>
-      <p className={styles.pageSubtext}>
-        Your complete economic impact analysis is ready. Review the sector-by-sector breakdown, 
-        hidden factors, and narrative summary below.
-      </p>
+      <div className={styles.header}>
+        <h2 className={styles.pageTitle}>Analysis Complete</h2>
+        <p className={styles.pageSubtext}>
+          Review the comprehensive breakdown of economic impacts across all affected sectors.
+        </p>
+      </div>
 
       {sectors.length === 0 && (
         <p className={styles.emptyNote}>
@@ -79,7 +79,7 @@ export function SummaryPage() {
 
       {narrative && (
         <div className={styles.narrative}>
-          <p className={styles.narrativeLabel}>📝 Narrative Summary</p>
+          <p className={styles.narrativeLabel}>Summary</p>
           <p className={styles.narrativeText}>{narrative}</p>
         </div>
       )}
@@ -90,14 +90,14 @@ export function SummaryPage() {
           className={styles.backButton}
           onClick={handleBack}
         >
-          ← Back to Breakdown
+          Back
         </button>
         <button
           type="button"
           className={styles.startOverButton}
           onClick={handleStartOver}
         >
-          Start New Analysis
+          New Analysis
         </button>
       </div>
     </div>

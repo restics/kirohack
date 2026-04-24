@@ -193,10 +193,10 @@ export function ConsistencyPage() {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+        <h2 className={styles.heading}>Verifying Facts</h2>
         <div className={styles.loadingState} role="status" aria-label="Loading consistency report">
           <div className={styles.spinner} aria-hidden="true" />
-          <p className={styles.stateMessage}>Analyzing source consistency…</p>
+          <p className={styles.stateMessage}>Cross-referencing sources...</p>
         </div>
       </div>
     );
@@ -205,10 +205,10 @@ export function ConsistencyPage() {
   if (isError) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+        <h2 className={styles.heading}>Verifying Facts</h2>
         <div className={styles.errorState} role="alert">
           <p className={styles.stateMessage}>{state.error ?? "An error occurred."}</p>
-          <button type="button" className={styles.retryButton} onClick={() => dispatch({ type: "RETRY" })}>Retry</button>
+          <button type="button" className={styles.retryButton} onClick={() => dispatch({ type: "RETRY" })}>Try Again</button>
         </div>
       </div>
     );
@@ -217,8 +217,8 @@ export function ConsistencyPage() {
   if (!report) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
-        <div className={styles.loadingState} role="status"><div className={styles.spinner} /><p className={styles.stateMessage}>Waiting for data…</p></div>
+        <h2 className={styles.heading}>Verifying Facts</h2>
+        <div className={styles.loadingState} role="status"><div className={styles.spinner} /><p className={styles.stateMessage}>Waiting for data...</p></div>
       </div>
     );
   }
@@ -226,10 +226,10 @@ export function ConsistencyPage() {
   if (report.no_sources_found) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+        <h2 className={styles.heading}>Verifying Facts</h2>
         <div className={styles.noSourcesState}>
           <p className={styles.stateMessage}>No relevant sources found for this event</p>
-          <button type="button" className={styles.backButton} onClick={() => dispatch({ type: "NAVIGATE_TO", step: 0 })}>Back to Input</button>
+          <button type="button" className={styles.backButton} onClick={() => dispatch({ type: "NAVIGATE_TO", step: 0 })}>Go Back</button>
         </div>
       </div>
     );
@@ -238,7 +238,7 @@ export function ConsistencyPage() {
   if (report.facts.length === 0) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+        <h2 className={styles.heading}>Verifying Facts</h2>
         <div className={styles.emptyState}><p className={styles.stateMessage}>No facts could be extracted from the selected sources.</p></div>
       </div>
     );
@@ -254,33 +254,33 @@ export function ConsistencyPage() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.heading}>Step 2: Consistency Report</h2>
-      <p className={styles.subtext}>
-        Review the facts extracted from your selected sources. Select the facts you want to include in the cascading impact analysis. 
-        The consistency percentage shows how many sources agree on each fact.
-      </p>
+      <div className={styles.header}>
+        <h2 className={styles.heading}>Fact Verification</h2>
+        <p className={styles.subtext}>
+          Select the verified facts to include in your impact analysis. Facts are cross-referenced across your selected sources.
+        </p>
+      </div>
 
       <div className={styles.barContainer}>
-        <h3 className={styles.subheading}>Fact Distribution Overview</h3>
+        <h3 className={styles.subheading}>Source Agreement</h3>
         <div className={styles.segmentedBar} role="img" aria-label={`${consistentPct.toFixed(0)}% consistent, ${inconsistentPct.toFixed(0)}% inconsistent, ${unverifiedPct.toFixed(0)}% unknown`}>
           {consistentPct > 0 && <div className={styles.segmentConsistent} style={{ width: `${consistentPct}%` }} />}
           {inconsistentPct > 0 && <div className={styles.segmentInconsistent} style={{ width: `${inconsistentPct}%` }} />}
           {unverifiedPct > 0 && <div className={styles.segmentUnknown} style={{ width: `${unverifiedPct}%` }} />}
         </div>
         <div className={styles.barLegend}>
-          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotConsistent}`} />Consistent ({consistentCount})</span>
-          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotInconsistent}`} />Inconsistent ({inconsistentCount})</span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotConsistent}`} />Verified ({consistentCount})</span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotInconsistent}`} />Disputed ({inconsistentCount})</span>
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotUnknown}`} />Unverified ({unverifiedCount})</span>
         </div>
-        <p className={styles.unknownLabel}>Unknown/Unverifiable: {report.unknown_percentage}%</p>
       </div>
 
       <div>
         <div className={styles.factsHeader}>
-          <h3 className={styles.subheading}>Select Facts for Analysis ({selectedFactIds.size} of {total} selected)</h3>
+          <h3 className={styles.subheading}>Facts ({selectedFactIds.size} of {total} selected)</h3>
           <div className={styles.selectActions}>
             <button type="button" className={styles.selectActionButton} onClick={selectAll}>All</button>
-            <button type="button" className={styles.selectActionButton} onClick={selectConsistent}>Consistent Only</button>
+            <button type="button" className={styles.selectActionButton} onClick={selectConsistent}>Verified Only</button>
             <button type="button" className={styles.selectActionButton} onClick={deselectAll}>None</button>
           </div>
         </div>
@@ -304,16 +304,15 @@ export function ConsistencyPage() {
           className={styles.backButton}
           onClick={handleBack}
         >
-          ← Back to Input
+          Back
         </button>
         <button
           type="button"
           className={styles.continueButton}
           disabled={selectedFactIds.size === 0 || isAdvancing}
           onClick={handleContinue}
-          aria-label={`Continue with ${selectedFactIds.size} selected facts`}
         >
-          {isAdvancing ? "Analyzing Impacts…" : `Continue with ${selectedFactIds.size} Facts →`}
+          {isAdvancing ? "Analyzing..." : `Analyze ${selectedFactIds.size} Facts`}
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useWizard } from '../context/WizardContext';
 import type { WizardStep } from '../types/index';
 import styles from './WizardStepper.module.css';
 
-const STEP_LABELS = ['Input', 'Consistency', 'Breakdown', 'Summary'] as const;
+const STEP_LABELS = ['Event', 'Verify', 'Analyze', 'Results'] as const;
 
 export function WizardStepper() {
   const { state, dispatch } = useWizard();
@@ -14,59 +14,49 @@ export function WizardStepper() {
     return 'upcoming';
   }
 
-  function getAriaLabel(index: number) {
-    const label = STEP_LABELS[index];
-    const stepState = getStepState(index);
-    const statusText =
-      stepState === 'completed'
-        ? 'Completed'
-        : stepState === 'current'
-          ? stepStatuses[index] === 'loading'
-            ? 'In progress'
-            : 'Current'
-          : 'Upcoming';
-    return `Step ${index + 1}: ${label} - ${statusText}`;
-  }
-
   function handleClick(index: number) {
     const stepState = getStepState(index);
-    if (stepState === 'completed') {
+    if (stepState === 'completed' || index === 0) {
       dispatch({ type: 'NAVIGATE_TO', step: index as WizardStep });
     }
   }
 
   return (
-    <nav className={styles.stepper} aria-label="Wizard progress">
-      {STEP_LABELS.map((label, index) => {
-        const stepState = getStepState(index);
-        const isLoading = index === currentStep && stepStatuses[index] === 'loading';
+    <nav className={styles.stepper} aria-label="Progress">
+      <div className={styles.stepperInner}>
+        {STEP_LABELS.map((label, index) => {
+          const stepState = getStepState(index);
+          const isLoading = index === currentStep && currentStep >= 0 && stepStatuses[currentStep as 0 | 1 | 2 | 3] === 'loading';
 
-        return (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 'inherit' }}>
-            <button
-              type="button"
-              className={`${styles.step} ${styles[stepState]}`}
-              aria-label={getAriaLabel(index)}
-              aria-current={index === currentStep ? 'step' : undefined}
-              onClick={() => handleClick(index)}
-              disabled={stepState === 'upcoming'}
-              tabIndex={stepState === 'upcoming' ? -1 : 0}
-            >
-              <span className={styles.indicator}>
-                {stepState === 'completed' ? '✓' : index + 1}
-              </span>
-              <span className={styles.label}>{label}</span>
-              {isLoading && <span className={styles.spinner} aria-hidden="true" />}
-            </button>
-            {index < STEP_LABELS.length - 1 && (
-              <span
-                className={`${styles.connector} ${stepStatuses[index] === 'complete' ? styles.done : ''}`}
-                aria-hidden="true"
-              />
-            )}
-          </div>
-        );
-      })}
+          return (
+            <div key={label} className={styles.stepWrapper}>
+              <button
+                type="button"
+                className={`${styles.step} ${styles[stepState]}`}
+                aria-current={index === currentStep ? 'step' : undefined}
+                onClick={() => handleClick(index)}
+                disabled={stepState === 'upcoming'}
+              >
+                <span className={styles.indicator}>
+                  {stepState === 'completed' ? (
+                    <svg viewBox="0 0 20 20" fill="currentColor" className={styles.checkIcon}>
+                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                    </svg>
+                  ) : isLoading ? (
+                    <span className={styles.spinner} />
+                  ) : (
+                    <span className={styles.number}>{index + 1}</span>
+                  )}
+                </span>
+                <span className={styles.label}>{label}</span>
+              </button>
+              {index < STEP_LABELS.length - 1 && (
+                <div className={`${styles.connector} ${stepStatuses[index] === 'complete' ? styles.connectorDone : ''}`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </nav>
   );
 }

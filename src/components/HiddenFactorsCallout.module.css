@@ -1,61 +1,84 @@
 .container {
-  padding: var(--space-8) 0;
+  background: var(--color-warning-subtle);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-warning);
 }
 
 .heading {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-warning);
-  margin-bottom: var(--space-2);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
 }
 
 .subtitle {
   font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  margin-bottom: var(--space-6);
+  color: var(--color-text-secondary);
 }
 
 .factorsList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .factorCard {
-  background-color: var(--color-surface);
-  border-left: 3px solid var(--color-warning);
-  border-radius: var(--radius-md);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: var(--space-4);
 }
 
 .factorHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: var(--space-3);
   margin-bottom: var(--space-2);
   flex-wrap: wrap;
 }
 
 .factorName {
-  font-size: var(--font-size-base);
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
   color: var(--color-text);
 }
 
 .categoryBadge {
-  display: inline-block;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: var(--font-medium);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
 }
 
 .factorExplanation {
   font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  line-height: 1.7;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
 }

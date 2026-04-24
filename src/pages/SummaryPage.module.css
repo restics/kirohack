@@ -1,22 +1,25 @@
 .page {
-  padding: var(--space-4) 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-6);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .pageTitle {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-semibold);
   color: var(--color-text);
-  margin: 0;
 }
 
 .pageSubtext {
   font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  line-height: 1.6;
-  margin: 0 0 var(--space-4) 0;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
 }
 
 .loading {
@@ -29,11 +32,11 @@
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--color-surface);
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-border);
   border-top-color: var(--color-primary);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 0.8s linear infinite;
 }
 
@@ -43,7 +46,7 @@
 
 .loadingText {
   font-size: var(--font-size-sm);
-  color: var(--color-muted);
+  color: var(--color-text-secondary);
 }
 
 .error {
@@ -52,122 +55,121 @@
 }
 
 .errorMessage {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--color-error);
   margin-bottom: var(--space-4);
 }
 
 .retryButton {
-  padding: var(--space-2) var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
   background-color: var(--color-primary);
-  color: #fff;
-  border-radius: var(--radius-md);
-  font-weight: 600;
+  color: white;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-medium);
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: background-color var(--duration-fast);
+  transition: all var(--duration-fast) var(--ease-out);
   border: none;
 }
 
 .retryButton:hover {
-  background-color: #3a7aee;
+  background-color: var(--color-primary-hover);
 }
 
 .emptyNote {
   font-size: var(--font-size-sm);
-  color: var(--color-muted);
+  color: var(--color-text-secondary);
   font-style: italic;
   padding: var(--space-4) 0;
   text-align: center;
 }
 
 .narrative {
-  padding: var(--space-8) 0;
-  border-top: 1px solid rgba(136, 136, 160, 0.15);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
 }
 
 .narrativeLabel {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--color-primary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
   margin-bottom: var(--space-3);
 }
 
 .narrativeText {
-  font-size: var(--font-size-base);
-  color: var(--color-muted);
-  line-height: 1.8;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
   white-space: pre-line;
 }
 
-/* Navigation buttons */
+/* Navigation */
 .navigationButtons {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: var(--space-4);
-  margin-top: var(--space-6);
   padding-top: var(--space-6);
-  border-top: 1px solid rgba(136, 136, 160, 0.15);
+  border-top: 1px solid var(--color-border);
 }
 
 .backButton {
-  padding: var(--space-3) var(--space-8);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
   background: transparent;
-  color: var(--color-text);
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--duration-fast);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-medium);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .backButton:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-text-secondary);
+  color: var(--color-text);
+  background: var(--color-surface);
 }
 
 .startOverButton {
-  padding: var(--space-3) var(--space-8);
-  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
   border: none;
-  background-color: var(--color-primary);
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--duration-fast);
+  background: var(--gradient-primary);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .startOverButton:hover {
-  background-color: #3a7aee;
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Responsive: adjust spacing on mobile */
-@media (max-width: 767px) {
+@media (max-width: 640px) {
   .pageTitle {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
   }
 
-  .retryButton {
-    width: 100%;
-    text-align: center;
-  }
-  
   .navigationButtons {
     flex-direction: column;
   }
-  
+
   .backButton,
   .startOverButton {
     width: 100%;
-    text-align: center;
+    justify-content: center;
   }
 }

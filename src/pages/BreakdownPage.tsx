@@ -34,10 +34,10 @@ export function BreakdownPage() {
   if (stepStatuses[2] === 'loading') {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 3: Cascading Breakdown</h2>
+        <h2 className={styles.heading}>Analyzing Impacts</h2>
         <div className={styles.loadingState} role="status" aria-label="Loading cascade data">
           <div className={styles.spinner} />
-          <p className={styles.stateMessage}>Analyzing cascading economic impacts…</p>
+          <p className={styles.stateMessage}>Tracing cascading economic impacts...</p>
         </div>
       </div>
     );
@@ -46,10 +46,10 @@ export function BreakdownPage() {
   if (stepStatuses[2] === 'error') {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 3: Cascading Breakdown</h2>
+        <h2 className={styles.heading}>Analyzing Impacts</h2>
         <div className={styles.errorState} role="alert">
           <p className={styles.stateMessage}>{state.error ?? 'Something went wrong.'}</p>
-          <button className={styles.retryButton} onClick={() => dispatch({ type: 'RETRY' })}>Retry</button>
+          <button className={styles.retryButton} onClick={() => dispatch({ type: 'RETRY' })}>Try Again</button>
         </div>
       </div>
     );
@@ -58,7 +58,7 @@ export function BreakdownPage() {
   if (!cascadeData || cascadeData.sectors.length === 0) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Step 3: Cascading Breakdown</h2>
+        <h2 className={styles.heading}>Analyzing Impacts</h2>
         <div className={styles.emptyState}>
           <p className={styles.stateMessage}>No sectors impacted by this event.</p>
         </div>
@@ -72,20 +72,21 @@ export function BreakdownPage() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.heading}>Step 3: Cascading Breakdown</h2>
-      <p className={styles.subtext}>
-        Review the cascading economic impacts across all sectors. Each sector shows direct and indirect impacts 
-        with their severity levels. Scroll down to see all {cascadeData.sectors.length} sectors.
-      </p>
+      <div className={styles.header}>
+        <h2 className={styles.heading}>Impact Analysis</h2>
+        <p className={styles.subtext}>
+          Explore how the event cascades through interconnected economic sectors. Click on impacts to see details and trace downstream effects.
+        </p>
+      </div>
       
       <div className={styles.summaryStats}>
         <div className={styles.statItem}>
           <span className={styles.statValue}>{cascadeData.sectors.length}</span>
-          <span className={styles.statLabel}>Sectors Affected</span>
+          <span className={styles.statLabel}>Sectors</span>
         </div>
         <div className={styles.statItem}>
           <span className={styles.statValue}>{totalImpacts}</span>
-          <span className={styles.statLabel}>Total Impacts</span>
+          <span className={styles.statLabel}>Impacts</span>
         </div>
         <div className={styles.statItem}>
           <span className={styles.statValue}>{hiddenFactors}</span>
@@ -105,7 +106,7 @@ export function BreakdownPage() {
           className={styles.backButton}
           onClick={handleBack}
         >
-          ← Back to Consistency
+          Back
         </button>
         <button
           type="button"
@@ -113,7 +114,7 @@ export function BreakdownPage() {
           disabled={isAdvancing}
           onClick={handleContinue}
         >
-          {isAdvancing ? "Generating Summary…" : "Continue to Summary →"}
+          {isAdvancing ? "Generating..." : "View Summary"}
         </button>
       </div>
     </div>

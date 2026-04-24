@@ -16,9 +16,39 @@ const SECTOR_COLORS = [
 ];
 
 const RAW_SECTOR_COLORS = [
-  '#4f8cff', '#22c55e', '#f59e0b', '#ef4444', '#a855f7',
+  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
   '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1',
 ];
+
+// SVG icon for sector headers
+function SectorIcon({ color }: { color: string }) {
+  return (
+    <svg 
+      className={styles.sectorIcon} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+    </svg>
+  );
+}
+
+// SVG icon for worldwide implications
+function GlobeIcon() {
+  return (
+    <svg 
+      className={styles.globeIcon} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="1.5"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+    </svg>
+  );
+}
 
 function useInView(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null);
@@ -65,7 +95,7 @@ export function SectorSection({ sector, sectorIndex }: SectorSectionProps) {
       aria-label={`${sector.name} sector summary`}
     >
       <h3 className={styles.heading}>
-        <span className={styles.sectorIcon}>{sector.icon}</span>
+        <SectorIcon color={rawColor} />
         <span style={{ color: sectorColor }}>{sector.name}</span>
       </h3>
 
@@ -84,7 +114,10 @@ export function SectorSection({ sector, sectorIndex }: SectorSectionProps) {
 
       {sector.worldwide_implications && (
         <div className={styles.implications}>
-          <p className={styles.implicationsLabel}>🌐 Worldwide Implications</p>
+          <p className={styles.implicationsLabel}>
+            <GlobeIcon />
+            Worldwide Implications
+          </p>
           <p className={styles.implicationsText}>{sector.worldwide_implications}</p>
         </div>
       )}

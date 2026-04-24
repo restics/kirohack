@@ -25,7 +25,7 @@ type WizardAction =
 // --- Initial State ---
 
 export const initialState: WizardState = {
-  currentStep: 0,
+  currentStep: -1,
   stepStatuses: ["idle", "idle", "idle", "idle"],
   newsEvent: "",
   selectedSources: [],
@@ -157,12 +157,20 @@ export function wizardReducer(
 
     case "NAVIGATE_TO": {
       const target = action.step;
+      // Allow navigation to home
+      if (target === -1) {
+        return { ...state, currentStep: -1 };
+      }
+      // Allow navigation to step 0 from home
+      if (state.currentStep === -1 && target === 0) {
+        return { ...state, currentStep: 0 };
+      }
       // Allow backward navigation to completed steps
       if (target < state.currentStep) {
-        if (state.stepStatuses[target] === "complete") {
+        if (state.stepStatuses[target] === "complete" || target === 0) {
           return { ...state, currentStep: target };
         }
-        return state; // block if target isn't complete
+        return state;
       }
       // Allow navigation to current step (no-op effectively)
       if (target === state.currentStep) {
@@ -176,7 +184,8 @@ export function wizardReducer(
     }
 
     case "RESET": {
-      return { ...initialState };
+      // Reset all state but go to step 0 (input page) instead of homepage
+      return { ...initialState, currentStep: 0 };
     }
 
     default:

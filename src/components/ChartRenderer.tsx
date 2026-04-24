@@ -119,6 +119,24 @@ function getPieOptions(animate: boolean): ChartOptions<'pie'> & ChartOptions<'do
   } as ChartOptions<'pie'> & ChartOptions<'doughnut'>;
 }
 
+// SVG icons for toggle button
+function ChartIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18 9l-5 5-4-4-3 3" />
+    </svg>
+  );
+}
+
+function TableIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M10 3v18M14 3v18M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6z" />
+    </svg>
+  );
+}
+
 export function ChartRenderer({ chart, sectorColor, animate }: ChartRendererProps) {
   const [showTable, setShowTable] = useState(false);
   const data = buildChartJsData(chart, sectorColor);
@@ -158,7 +176,7 @@ export function ChartRenderer({ chart, sectorColor, animate }: ChartRendererProp
         aria-label={showTable ? 'Hide data table' : 'Show data table'}
         aria-expanded={showTable}
       >
-        {showTable ? '📊 Hide Data Table' : '📋 Show Data Table'}
+        {showTable ? <><ChartIcon /> Hide Data Table</> : <><TableIcon /> Show Data Table</>}
       </button>
       {showTable && (
         <table className={styles.dataTable} aria-label={`Data table for ${chart.title}`}>

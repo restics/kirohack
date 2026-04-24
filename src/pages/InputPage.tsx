@@ -97,19 +97,26 @@ export function InputPage() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.heading}>Step 1: Describe Your Event</h2>
-      <p className={styles.stepDescription}>Enter the news event you want to analyze and select your preferred sources.</p>
+      <div className={styles.header}>
+        <h2 className={styles.heading}>Describe the Economic Event</h2>
+        <p className={styles.stepDescription}>
+          Enter a news event or economic development you want to analyze. We'll trace its cascading impacts across multiple sectors.
+        </p>
+      </div>
 
-      <div className={styles.textareaWrapper}>
-        <textarea
-          className={`${styles.textarea}${attempted && validationError ? ` ${styles.textareaError}` : ""}`}
-          aria-label="News event description"
-          placeholder="What do you want to analyze? (e.g., 'US imposes 25% tariff on imported coffee')"
-          rows={4}
-          value={event}
-          onChange={(e) => setEvent(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+      <div className={styles.inputSection}>
+        <label className={styles.inputLabel}>Event Description</label>
+        <div className={styles.textareaWrapper}>
+          <textarea
+            className={`${styles.textarea}${attempted && validationError ? ` ${styles.textareaError}` : ""}`}
+            aria-label="News event description"
+            placeholder="e.g., US imposes 25% tariff on imported coffee beans"
+            rows={4}
+            value={event}
+            onChange={(e) => setEvent(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
         <span
           className={`${styles.charCount}${event.length > MAX_LENGTH ? ` ${styles.charCountOver}` : ""}`}
           aria-live="polite"
@@ -130,13 +137,13 @@ export function InputPage() {
 
       <div className={styles.sourceSection}>
         <div className={styles.sourceSectionHeader}>
-          <span className={styles.sourceLabel}>Select News Sources</span>
+          <span className={styles.sourceLabel}>News Sources</span>
           <div className={styles.sourceActions}>
             <button type="button" className={styles.sourceActionBtn} onClick={selectAllSources}>Select All</button>
-            <button type="button" className={styles.sourceActionBtn} onClick={deselectAllSources}>Deselect All</button>
+            <button type="button" className={styles.sourceActionBtn} onClick={deselectAllSources}>Clear</button>
           </div>
         </div>
-        <p className={styles.sourceHint}>Choose which sources to analyze. Consistency scores will be calculated after analysis.</p>
+        <p className={styles.sourceHint}>Select sources to cross-reference for fact verification</p>
         
         <div className={styles.sourceGrid} role="group" aria-label="News source selection">
           {AVAILABLE_SOURCES.map((source) => {
@@ -152,7 +159,7 @@ export function InputPage() {
               >
                 <div className={styles.sourceCardHeader}>
                   <span className={styles.sourceCardName}>{source.name}</span>
-                  <span className={styles.sourceCardCheck}>{selected ? "✓" : ""}</span>
+                  {selected && <span className={styles.sourceCardCheck}>✓</span>}
                 </div>
                 <span className={styles.sourceCardDescription}>{source.description}</span>
               </button>
@@ -162,9 +169,7 @@ export function InputPage() {
 
         {selectedSources.length > 0 && (
           <div className={styles.selectionSummary}>
-            <span className={styles.summaryText}>
-              {selectedSources.length} source{selectedSources.length !== 1 ? "s" : ""} selected
-            </span>
+            {selectedSources.length} source{selectedSources.length !== 1 ? "s" : ""} selected
           </div>
         )}
       </div>
@@ -173,10 +178,9 @@ export function InputPage() {
         type="button"
         className={styles.submitButton}
         disabled={isDisabled}
-        aria-label="Continue to consistency analysis"
         onClick={handleSubmit}
       >
-        {isSubmitting ? "Analyzing…" : "Continue to Consistency Analysis →"}
+        {isSubmitting ? "Analyzing..." : "Continue"}
       </button>
     </div>
   );

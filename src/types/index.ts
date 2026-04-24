@@ -93,7 +93,7 @@ export interface SummaryData {
 
 // === Wizard State ===
 
-export type WizardStep = 0 | 1 | 2 | 3;
+export type WizardStep = -1 | 0 | 1 | 2 | 3;
 
 export type StepStatus = "idle" | "loading" | "complete" | "error";
 
