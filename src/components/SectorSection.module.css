@@ -1,0 +1,118 @@
+.section {
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid rgba(136, 136, 160, 0.15);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--duration-slow) ease-out, transform var(--duration-slow) ease-out;
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.heading {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sectorIcon {
+  font-size: var(--font-size-2xl);
+}
+
+.blurb {
+  font-size: var(--font-size-base);
+  color: var(--color-muted);
+  line-height: 1.7;
+  margin-bottom: var(--space-6);
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.implications {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.implicationsLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-2);
+}
+
+.implicationsText {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.impactsList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.impactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-sm);
+}
+
+.severityBadge {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-background);
+}
+
+.impactTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.impactDesc {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted);
+}
+
+/* Responsive: single column charts on mobile */
+@media (max-width: 767px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heading {
+    font-size: var(--font-size-lg);
+  }
+}
