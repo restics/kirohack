@@ -17,6 +17,7 @@ function sortBySeverity(impacts: Impact[]): Impact[] {
 export function SectorColumn({ sector, sectorIndex }: SectorColumnProps) {
   const [showAll, setShowAll] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [cascadeStates, setCascadeStates] = useState<Record<string, boolean>>({});
 
   const sortedImpacts = useMemo(() => sortBySeverity(sector.impacts), [sector.impacts]);
 
@@ -34,6 +35,13 @@ export function SectorColumn({ sector, sectorIndex }: SectorColumnProps) {
       }
       return next;
     });
+  }, []);
+
+  const handleCascadeToggle = useCallback((impactId: string, show: boolean) => {
+    setCascadeStates((prev) => ({
+      ...prev,
+      [impactId]: show,
+    }));
   }, []);
 
   const sectorColor = `var(--sector-color-${sectorIndex % 10})`;
@@ -59,6 +67,8 @@ export function SectorColumn({ sector, sectorIndex }: SectorColumnProps) {
               depth={0}
               expandedIds={expandedIds}
               onToggle={handleToggle}
+              showCascade={cascadeStates[impact.id] ?? false}
+              onToggleCascade={(show) => handleCascadeToggle(impact.id, show)}
             />
           </div>
         ))}

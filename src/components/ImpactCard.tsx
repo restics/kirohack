@@ -7,14 +7,32 @@ export interface ImpactCardProps {
   depth: number;
   expandedIds: Set<string>;
   onToggle: (id: string) => void;
+  showCascade?: boolean;
+  onToggleCascade?: (show: boolean) => void;
 }
 
 function sortBySeverity(impacts: Impact[]): Impact[] {
   return [...impacts].sort((a, b) => b.severity - a.severity);
 }
 
-export function ImpactCard({ impact, depth, expandedIds, onToggle }: ImpactCardProps) {
+function countAllChildren(impact: Impact): number {
+  let count = impact.children.length;
+  for (const child of impact.children) {
+    count += countAllChildren(child);
+  }
+  return count;
+}
+
+export function ImpactCard({ 
+  impact, 
+  depth, 
+  expandedIds, 
+  onToggle, 
+  showCascade = false,
+  onToggleCascade 
+}: ImpactCardProps) {
   const isExpanded = expandedIds.has(impact.id);
+  const isTopLevel = depth === 0;
 
   const handleToggle = useCallback(() => {
     onToggle(impact.id);
@@ -33,12 +51,20 @@ export function ImpactCard({ impact, depth, expandedIds, onToggle }: ImpactCardP
     [impact.id, isExpanded, onToggle]
   );
 
+  const handleCascadeToggle = useCallback(() => {
+    if (onToggleCascade) {
+      onToggleCascade(!showCascade);
+    }
+  }, [onToggleCascade, showCascade]);
+
   const borderClass = impact.type === 'direct' ? styles.direct : styles.indirect;
   const badgeClass = impact.type === 'direct' ? styles.typeBadgeDirect : styles.typeBadgeIndirect;
   const sortedChildren = sortBySeverity(impact.children);
+  const hasChildren = sortedChildren.length > 0;
+  const totalDescendants = countAllChildren(impact);
 
   return (
-    <div>
+    <div className={styles.impactWrapper}>
       <div
         className={`${styles.card} ${borderClass}`}
         role="button"
@@ -100,8 +126,21 @@ export function ImpactCard({ impact, depth, expandedIds, onToggle }: ImpactCardP
         )}
       </div>
 
-      {sortedChildren.length > 0 && (
-        <div className={styles.children} role="group" aria-label={`Child impacts of ${impact.title}`}>
+      {hasChildren && isTopLevel && (
+        <button
+          type="button"
+          className={`${styles.cascadeToggle} ${showCascade ? styles.cascadeToggleOpen : ''}`}
+          onClick={handleCascadeToggle}
+          aria-expanded={showCascade}
+          aria-label={showCascade ? `Hide all ${totalDescendants} cascading impacts` : `Show all ${totalDescendants} cascading impacts`}
+        >
+          <span className={styles.cascadeIcon}>{showCascade ? '▼' : '▶'}</span>
+          <span>{showCascade ? 'Hide' : 'Show'} all {totalDescendants} cascading impact{totalDescendants !== 1 ? 's' : ''}</span>
+        </button>
+      )}
+
+      {hasChildren && showCascade && (
+        <div className={styles.children} role="group" aria-label={`Cascading impacts from ${impact.title}`}>
           {sortedChildren.map((child) => (
             <ImpactCard
               key={child.id}
@@ -109,6 +148,7 @@ export function ImpactCard({ impact, depth, expandedIds, onToggle }: ImpactCardP
               depth={depth + 1}
               expandedIds={expandedIds}
               onToggle={onToggle}
+              showCascade={showCascade}
             />
           ))}
         </div>

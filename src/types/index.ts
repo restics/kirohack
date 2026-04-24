@@ -1,3 +1,11 @@
+// === Source with Consistency Score ===
+
+export interface SourceWithScore {
+  name: string;
+  consistencyScore: number; // [0, 100] - percentage of facts this source agrees on
+  factCount: number; // number of facts this source contributes to
+}
+
 // === Consistency Report ===
 
 export interface FactItem {
@@ -13,6 +21,7 @@ export interface ConsistencyReport {
   unknown_percentage: number; // [0, 100]
   no_sources_found: boolean;
   facts: FactItem[];
+  sourceScores?: SourceWithScore[]; // optional: computed consistency scores per source
 }
 
 // === Cascade Data ===
@@ -93,6 +102,7 @@ export interface WizardState {
   stepStatuses: [StepStatus, StepStatus, StepStatus, StepStatus];
   newsEvent: string;
   selectedSources: string[];
+  selectedFactIds: string[];
   consistencyReport: ConsistencyReport | null;
   cascadeData: CascadeData | null;
   summaryData: SummaryData | null;

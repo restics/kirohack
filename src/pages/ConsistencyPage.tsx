@@ -1,7 +1,10 @@
 import { useState, useCallback } from "react";
 import { useWizard } from "../context/WizardContext";
+import { createMockApiClient } from "../api/client";
 import type { FactItem } from "../types/index";
 import styles from "./ConsistencyPage.module.css";
+
+const apiClient = createMockApiClient();
 
 function getStatusIcon(status: FactItem["status"]) {
   switch (status) {
@@ -14,80 +17,101 @@ function getStatusIcon(status: FactItem["status"]) {
   }
 }
 
+function getAgreementColor(percentage: number): string {
+  if (percentage >= 80) return "var(--color-success)";
+  if (percentage >= 50) return "var(--color-warning, #f59e0b)";
+  return "var(--color-error)";
+}
+
 interface FactItemComponentProps {
   fact: FactItem;
   isExpanded: boolean;
-  onToggle: () => void;
+  isSelected: boolean;
+  onToggleExpand: () => void;
+  onToggleSelect: () => void;
 }
 
-function FactItemComponent({ fact, isExpanded, onToggle }: FactItemComponentProps) {
+function FactItemComponent({ fact, isExpanded, isSelected, onToggleExpand, onToggleSelect }: FactItemComponentProps) {
   const icon = getStatusIcon(fact.status);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        onToggle();
+        onToggleExpand();
       } else if (e.key === "Escape" && isExpanded) {
         e.preventDefault();
-        onToggle();
+        onToggleExpand();
       }
     },
-    [onToggle, isExpanded]
+    [onToggleExpand, isExpanded]
   );
 
   return (
-    <li
-      className={styles.factItem}
-      role="button"
-      tabIndex={0}
-      aria-expanded={isExpanded}
-      aria-label={`${fact.statement} — ${fact.agreement_percentage}% agree — ${icon.label}`}
-      onClick={onToggle}
-      onKeyDown={handleKeyDown}
-    >
-      <div className={styles.factHeader}>
-        <span className={`${styles.statusIcon} ${icon.className}`} aria-hidden="true">
-          {icon.symbol}
-        </span>
-        <div className={styles.factBody}>
-          <p className={styles.factStatement}>{fact.statement}</p>
-          <span className={styles.factAgreement}>{fact.agreement_percentage}% agree</span>
+    <li className={`${styles.factItem} ${isSelected ? styles.factItemSelected : ""}`}>
+      <div className={styles.factRow}>
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onToggleSelect}
+          className={styles.factCheckbox}
+          aria-label={`Select fact: ${fact.statement}`}
+        />
+        <div
+          className={styles.factContent}
+          role="button"
+          tabIndex={0}
+          aria-expanded={isExpanded}
+          aria-label={`${fact.statement} — ${fact.agreement_percentage}% agree — ${icon.label}`}
+          onClick={onToggleExpand}
+          onKeyDown={handleKeyDown}
+        >
+          <div className={styles.factHeader}>
+            <span className={`${styles.statusIcon} ${icon.className}`} aria-hidden="true">
+              {icon.symbol}
+            </span>
+            <div className={styles.factBody}>
+              <p className={styles.factStatement}>{fact.statement}</p>
+              <span 
+                className={styles.factAgreement}
+                style={{ color: getAgreementColor(fact.agreement_percentage) }}
+              >
+                {fact.agreement_percentage}% consistency
+              </span>
+            </div>
+            <span className={styles.expandIcon}>{isExpanded ? "▼" : "▶"}</span>
+          </div>
+
+          {isExpanded && (
+            <div className={styles.factDetail}>
+              {fact.supporting_sources.length > 0 && (
+                <div className={styles.sourceGroup}>
+                  <span className={styles.sourceGroupLabel}>Supporting Sources</span>
+                  <ul className={styles.sourceList} aria-label="Supporting sources">
+                    {fact.supporting_sources.map((source) => (
+                      <li key={source} className={`${styles.sourceChip} ${styles.sourceChipSupporting}`}>
+                        {source}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {fact.contradicting_sources.length > 0 && (
+                <div className={styles.sourceGroup}>
+                  <span className={styles.sourceGroupLabel}>Contradicting Sources</span>
+                  <ul className={styles.sourceList} aria-label="Contradicting sources">
+                    {fact.contradicting_sources.map((source) => (
+                      <li key={source} className={`${styles.sourceChip} ${styles.sourceChipContradicting}`}>
+                        {source}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {isExpanded && (
-        <div className={styles.factDetail}>
-          {fact.supporting_sources.length > 0 && (
-            <div className={styles.sourceGroup}>
-              <span className={styles.sourceGroupLabel}>Supporting Sources</span>
-              <ul className={styles.sourceList} aria-label="Supporting sources">
-                {fact.supporting_sources.map((source) => (
-                  <li key={source} className={`${styles.sourceChip} ${styles.sourceChipSupporting}`}>
-                    {source}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {fact.contradicting_sources.length > 0 && (
-            <div className={styles.sourceGroup}>
-              <span className={styles.sourceGroupLabel}>Contradicting Sources</span>
-              <ul className={styles.sourceList} aria-label="Contradicting sources">
-                {fact.contradicting_sources.map((source) => (
-                  <li key={source} className={`${styles.sourceChip} ${styles.sourceChipContradicting}`}>
-                    {source}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className={styles.sourceGroup}>
-            <span className={styles.sourceGroupLabel}>Agreement</span>
-            <span className={styles.factAgreement}>{fact.agreement_percentage}% of sources agree</span>
-          </div>
-        </div>
-      )}
     </li>
   );
 }
@@ -95,28 +119,81 @@ function FactItemComponent({ fact, isExpanded, onToggle }: FactItemComponentProp
 export function ConsistencyPage() {
   const { state, dispatch } = useWizard();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [selectedFactIds, setSelectedFactIds] = useState<Set<string>>(() => {
+    // Default: select all consistent facts
+    const ids = new Set<string>();
+    if (state.consistencyReport) {
+      for (const fact of state.consistencyReport.facts) {
+        if (fact.status === "consistent") {
+          ids.add(fact.id);
+        }
+      }
+    }
+    return ids;
+  });
+  const [isAdvancing, setIsAdvancing] = useState(false);
 
   const report = state.consistencyReport;
   const isLoading = state.stepStatuses[1] === "loading";
   const isError = state.stepStatuses[1] === "error";
 
-  const toggleFact = useCallback((id: string) => {
+  const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   }, []);
 
-  // Loading state
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedFactIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    if (report) {
+      setSelectedFactIds(new Set(report.facts.map(f => f.id)));
+    }
+  }, [report]);
+
+  const deselectAll = useCallback(() => {
+    setSelectedFactIds(new Set());
+  }, []);
+
+  const selectConsistent = useCallback(() => {
+    if (report) {
+      setSelectedFactIds(new Set(report.facts.filter(f => f.status === "consistent").map(f => f.id)));
+    }
+  }, [report]);
+
+  const handleContinue = useCallback(async () => {
+    const ids = Array.from(selectedFactIds);
+    dispatch({ type: "CONFIRM_CONSISTENCY", selectedFactIds: ids });
+    setIsAdvancing(true);
+
+    try {
+      const cascadeData = await apiClient.fetchCascade(state.newsEvent, state.selectedSources);
+      dispatch({ type: "RECEIVE_CASCADE", cascadeData });
+    } catch (e) {
+      dispatch({
+        type: "SET_ERROR",
+        error: e instanceof Error ? e.message : "An unexpected error occurred.",
+      });
+    }
+    setIsAdvancing(false);
+  }, [selectedFactIds, dispatch, state.newsEvent, state.selectedSources]);
+
+  const handleBack = useCallback(() => {
+    dispatch({ type: "NAVIGATE_TO", step: 0 });
+  }, [dispatch]);
+
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Consistency Report</h2>
+        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
         <div className={styles.loadingState} role="status" aria-label="Loading consistency report">
           <div className={styles.spinner} aria-hidden="true" />
           <p className={styles.stateMessage}>Analyzing source consistency…</p>
@@ -125,72 +202,48 @@ export function ConsistencyPage() {
     );
   }
 
-  // Error state
   if (isError) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Consistency Report</h2>
+        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
         <div className={styles.errorState} role="alert">
-          <p className={styles.stateMessage}>{state.error ?? "An error occurred while analyzing consistency."}</p>
-          <button
-            type="button"
-            className={styles.retryButton}
-            aria-label="Retry consistency analysis"
-            onClick={() => dispatch({ type: "RETRY" })}
-          >
-            Retry
-          </button>
+          <p className={styles.stateMessage}>{state.error ?? "An error occurred."}</p>
+          <button type="button" className={styles.retryButton} onClick={() => dispatch({ type: "RETRY" })}>Retry</button>
         </div>
       </div>
     );
   }
 
-  // No report yet (shouldn't normally happen if not loading/error, but guard)
   if (!report) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Consistency Report</h2>
-        <div className={styles.loadingState} role="status" aria-label="Waiting for data">
-          <div className={styles.spinner} aria-hidden="true" />
-          <p className={styles.stateMessage}>Waiting for data…</p>
-        </div>
+        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+        <div className={styles.loadingState} role="status"><div className={styles.spinner} /><p className={styles.stateMessage}>Waiting for data…</p></div>
       </div>
     );
   }
 
-  // No sources found
   if (report.no_sources_found) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Consistency Report</h2>
+        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
         <div className={styles.noSourcesState}>
           <p className={styles.stateMessage}>No relevant sources found for this event</p>
-          <button
-            type="button"
-            className={styles.backButton}
-            aria-label="Go back to input page"
-            onClick={() => dispatch({ type: "NAVIGATE_TO", step: 0 })}
-          >
-            Back to Input
-          </button>
+          <button type="button" className={styles.backButton} onClick={() => dispatch({ type: "NAVIGATE_TO", step: 0 })}>Back to Input</button>
         </div>
       </div>
     );
   }
 
-  // Empty facts
   if (report.facts.length === 0) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.heading}>Consistency Report</h2>
-        <div className={styles.emptyState}>
-          <p className={styles.stateMessage}>No facts could be extracted from the selected sources.</p>
-        </div>
+        <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+        <div className={styles.emptyState}><p className={styles.stateMessage}>No facts could be extracted from the selected sources.</p></div>
       </div>
     );
   }
 
-  // Compute bar proportions
   const consistentCount = report.facts.filter((f) => f.status === "consistent").length;
   const inconsistentCount = report.facts.filter((f) => f.status === "inconsistent").length;
   const unverifiedCount = report.facts.filter((f) => f.status === "unverified").length;
@@ -201,57 +254,67 @@ export function ConsistencyPage() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.heading}>Consistency Report</h2>
-
-      <p className={styles.unknownLabel} aria-label={`Unknown: ${report.unknown_percentage}%`}>
-        Unknown: {report.unknown_percentage}%
+      <h2 className={styles.heading}>Step 2: Consistency Report</h2>
+      <p className={styles.subtext}>
+        Review the facts extracted from your selected sources. Select the facts you want to include in the cascading impact analysis. 
+        The consistency percentage shows how many sources agree on each fact.
       </p>
 
       <div className={styles.barContainer}>
-        <h3 className={styles.subheading}>Fact Distribution</h3>
-        <div
-          className={styles.segmentedBar}
-          role="img"
-          aria-label={`Consistency bar: ${consistentPct.toFixed(0)}% consistent, ${inconsistentPct.toFixed(0)}% inconsistent, ${unverifiedPct.toFixed(0)}% unknown`}
-        >
-          {consistentPct > 0 && (
-            <div className={styles.segmentConsistent} style={{ width: `${consistentPct}%` }} />
-          )}
-          {inconsistentPct > 0 && (
-            <div className={styles.segmentInconsistent} style={{ width: `${inconsistentPct}%` }} />
-          )}
-          {unverifiedPct > 0 && (
-            <div className={styles.segmentUnknown} style={{ width: `${unverifiedPct}%` }} />
-          )}
+        <h3 className={styles.subheading}>Fact Distribution Overview</h3>
+        <div className={styles.segmentedBar} role="img" aria-label={`${consistentPct.toFixed(0)}% consistent, ${inconsistentPct.toFixed(0)}% inconsistent, ${unverifiedPct.toFixed(0)}% unknown`}>
+          {consistentPct > 0 && <div className={styles.segmentConsistent} style={{ width: `${consistentPct}%` }} />}
+          {inconsistentPct > 0 && <div className={styles.segmentInconsistent} style={{ width: `${inconsistentPct}%` }} />}
+          {unverifiedPct > 0 && <div className={styles.segmentUnknown} style={{ width: `${unverifiedPct}%` }} />}
         </div>
         <div className={styles.barLegend}>
-          <span className={styles.legendItem}>
-            <span className={`${styles.legendDot} ${styles.dotConsistent}`} />
-            Consistent ({consistentCount})
-          </span>
-          <span className={styles.legendItem}>
-            <span className={`${styles.legendDot} ${styles.dotInconsistent}`} />
-            Inconsistent ({inconsistentCount})
-          </span>
-          <span className={styles.legendItem}>
-            <span className={`${styles.legendDot} ${styles.dotUnknown}`} />
-            Unknown ({unverifiedCount})
-          </span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotConsistent}`} />Consistent ({consistentCount})</span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotInconsistent}`} />Inconsistent ({inconsistentCount})</span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.dotUnknown}`} />Unverified ({unverifiedCount})</span>
         </div>
+        <p className={styles.unknownLabel}>Unknown/Unverifiable: {report.unknown_percentage}%</p>
       </div>
 
       <div>
-        <h3 className={styles.subheading}>Facts</h3>
+        <div className={styles.factsHeader}>
+          <h3 className={styles.subheading}>Select Facts for Analysis ({selectedFactIds.size} of {total} selected)</h3>
+          <div className={styles.selectActions}>
+            <button type="button" className={styles.selectActionButton} onClick={selectAll}>All</button>
+            <button type="button" className={styles.selectActionButton} onClick={selectConsistent}>Consistent Only</button>
+            <button type="button" className={styles.selectActionButton} onClick={deselectAll}>None</button>
+          </div>
+        </div>
         <ul className={styles.factList} aria-label="Fact items">
           {report.facts.map((fact) => (
             <FactItemComponent
               key={fact.id}
               fact={fact}
               isExpanded={expandedIds.has(fact.id)}
-              onToggle={() => toggleFact(fact.id)}
+              isSelected={selectedFactIds.has(fact.id)}
+              onToggleExpand={() => toggleExpand(fact.id)}
+              onToggleSelect={() => toggleSelect(fact.id)}
             />
           ))}
         </ul>
+      </div>
+
+      <div className={styles.navigationButtons}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={handleBack}
+        >
+          ← Back to Input
+        </button>
+        <button
+          type="button"
+          className={styles.continueButton}
+          disabled={selectedFactIds.size === 0 || isAdvancing}
+          onClick={handleContinue}
+          aria-label={`Continue with ${selectedFactIds.size} selected facts`}
+        >
+          {isAdvancing ? "Analyzing Impacts…" : `Continue with ${selectedFactIds.size} Facts →`}
+        </button>
       </div>
     </div>
   );

@@ -13,11 +13,14 @@ import type {
 type WizardAction =
   | { type: "SUBMIT"; newsEvent: string; selectedSources: string[] }
   | { type: "RECEIVE_CONSISTENCY"; consistencyReport: ConsistencyReport }
+  | { type: "CONFIRM_CONSISTENCY"; selectedFactIds: string[] }
   | { type: "RECEIVE_CASCADE"; cascadeData: CascadeData }
+  | { type: "CONFIRM_CASCADE" }
   | { type: "RECEIVE_SUMMARY"; summaryData: SummaryData }
   | { type: "SET_ERROR"; error: string }
   | { type: "RETRY" }
-  | { type: "NAVIGATE_TO"; step: WizardStep };
+  | { type: "NAVIGATE_TO"; step: WizardStep }
+  | { type: "RESET" };
 
 // --- Initial State ---
 
@@ -26,6 +29,7 @@ export const initialState: WizardState = {
   stepStatuses: ["idle", "idle", "idle", "idle"],
   newsEvent: "",
   selectedSources: [],
+  selectedFactIds: [],
   consistencyReport: null,
   cascadeData: null,
   summaryData: null,
@@ -58,6 +62,7 @@ export function wizardReducer(
         ...state,
         newsEvent: action.newsEvent,
         selectedSources: action.selectedSources,
+        selectedFactIds: [],
         stepStatuses: statuses,
         currentStep: 1,
         error: null,
@@ -68,11 +73,23 @@ export function wizardReducer(
     }
 
     case "RECEIVE_CONSISTENCY": {
+      // Don't auto-advance — wait for user to review and confirm
+      const statuses = setStepStatus(state.stepStatuses, 1, "complete");
+      return {
+        ...state,
+        consistencyReport: action.consistencyReport,
+        stepStatuses: statuses,
+        error: null,
+      };
+    }
+
+    case "CONFIRM_CONSISTENCY": {
+      // User confirmed fact selection — advance to cascade loading
       let statuses = setStepStatus(state.stepStatuses, 1, "complete");
       statuses = setStepStatus(statuses, 2, "loading");
       return {
         ...state,
-        consistencyReport: action.consistencyReport,
+        selectedFactIds: action.selectedFactIds,
         stepStatuses: statuses,
         currentStep: 2,
         error: null,
@@ -80,11 +97,22 @@ export function wizardReducer(
     }
 
     case "RECEIVE_CASCADE": {
+      // Don't auto-advance — wait for user to review and confirm
+      const statuses = setStepStatus(state.stepStatuses, 2, "complete");
+      return {
+        ...state,
+        cascadeData: action.cascadeData,
+        stepStatuses: statuses,
+        error: null,
+      };
+    }
+
+    case "CONFIRM_CASCADE": {
+      // User confirmed breakdown — advance to summary loading
       let statuses = setStepStatus(state.stepStatuses, 2, "complete");
       statuses = setStepStatus(statuses, 3, "loading");
       return {
         ...state,
-        cascadeData: action.cascadeData,
         stepStatuses: statuses,
         currentStep: 3,
         error: null,
@@ -145,6 +173,10 @@ export function wizardReducer(
         return state;
       }
       return { ...state, currentStep: target };
+    }
+
+    case "RESET": {
+      return { ...initialState };
     }
 
     default:
