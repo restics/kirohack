@@ -20,7 +20,7 @@ export function getNewsApiKey(): string | null {
 export interface ApiClient {
   fetchConsistency(event: string, sources: string[]): Promise<ConsistencyReport>;
   fetchCascade(event: string, sources: string[]): Promise<CascadeData>;
-  fetchSummary(event: string, sources: string[]): Promise<SummaryData>;
+  fetchSummary(event: string, sources: string[], cascadeData?: CascadeData): Promise<SummaryData>;
 }
 
 async function postJson<T>(path: string, body: Record<string, unknown>): Promise<T> {
@@ -53,8 +53,8 @@ class RealApiClient implements ApiClient {
   async fetchCascade(event: string, sources: string[]): Promise<CascadeData> {
     return postJson<CascadeData>("/api/cascade", { event, sources });
   }
-  async fetchSummary(event: string, sources: string[]): Promise<SummaryData> {
-    return postJson<SummaryData>("/api/summary", { event, sources });
+  async fetchSummary(event: string, sources: string[], cascadeData?: CascadeData): Promise<SummaryData> {
+    return postJson<SummaryData>("/api/summary", { event, sources, cascadeData });
   }
 }
 

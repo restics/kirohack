@@ -16,7 +16,7 @@ export function BreakdownPage() {
     setIsAdvancing(true);
 
     try {
-      const summaryData = await apiClient.fetchSummary(state.newsEvent, state.selectedSources);
+      const summaryData = await apiClient.fetchSummary(state.newsEvent, state.selectedSources, cascadeData ?? undefined);
       dispatch({ type: "RECEIVE_SUMMARY", summaryData });
     } catch (e) {
       dispatch({

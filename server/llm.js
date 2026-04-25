@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchArticles, formatArticlesForLLM } from './news.js';
+import { validateConsistency, validateCascade, validateSummary } from './validate.js';
 
 const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
 const DEFAULT_FREE_MODEL = 'openrouter/free';
@@ -140,9 +141,44 @@ Rules:
 - Realistic severity and confidence scores based on article evidence
 - Return ONLY the JSON object, no markdown, no explanation`;
 
-const SUMMARY_SYSTEM = `You are an expert economic analyst. You will be given a news event and REAL ARTICLES about it. Each article is numbered [Article 1], [Article 2], etc.
+const SUMMARY_CHART_PLANNING_SYSTEM = `You are a data visualization strategist. You will be given news articles about an economic event.
 
-Based on the REAL information, produce a comprehensive summary with chart-ready data and IN-TEXT CITATIONS.
+Your job is to think through what charts would be MOST COMPELLING and INFORMATIVE for understanding this event's economic impact. For each chart idea, explain:
+1. What ARGUMENT or INSIGHT the chart communicates
+2. What specific data from the articles supports it
+3. Why this chart type is the right choice for this data
+
+Return ONLY valid JSON:
+{
+  "chart_plans": [
+    {
+      "sector": "Which economic sector",
+      "argument": "The specific insight this chart communicates, e.g., 'Oil prices have spiked 15% since the blockade began, with Brent crude rising faster than WTI'",
+      "data_source": "Where in the articles this data comes from",
+      "chart_type": "bar | line | pie | donut",
+      "why_this_type": "Why this chart type fits — e.g., 'bar chart because we are comparing the same metric (price change %) across different oil benchmarks'",
+      "title": "Chart title with unit, e.g., 'Oil Price Change Since Blockade ($/barrel)'",
+      "unit": "The single unit all values share",
+      "labels": ["Category1", "Category2"],
+      "dataset_label": "What the numbers represent",
+      "values": [number, number]
+    }
+  ]
+}
+
+CRITICAL RULES:
+- Think like a journalist or analyst: what charts would make a reader UNDERSTAND the situation?
+- Every chart must make a clear ARGUMENT — not just display data for the sake of it
+- ALL values in a single chart MUST share the same unit. If you want to show two different metrics, make two separate charts.
+- Use real numbers from the articles. If the articles don't contain specific numbers for a chart idea, SKIP IT.
+- Prefer charts that show: comparisons (before/after, country vs country), proportions (share of global trade), or trends (price over time)
+- 4-8 chart plans total, spread across sectors
+- labels and values arrays MUST be the same length
+- Return ONLY the JSON, no explanation`;
+
+const SUMMARY_NARRATIVE_SYSTEM = `You are an expert economic analyst. You will be given a news event, real articles (numbered [Article 1], [Article 2], etc.), and extracted data.
+
+Write the narrative analysis with IN-TEXT CITATIONS. Do NOT generate any chart data — that is handled separately.
 
 Return ONLY valid JSON matching this schema:
 {
@@ -150,16 +186,8 @@ Return ONLY valid JSON matching this schema:
     {
       "name": "Sector Name",
       "icon": "emoji",
-      "summary_blurb": "1-3 sentences with citations like [1] [2]",
+      "summary_blurb": "1-3 sentences with citations [1] [2]",
       "worldwide_implications": "Global impact description with citations [3]",
-      "charts": [
-        {
-          "chart_type": "bar" | "pie" | "donut" | "line" | "area",
-          "title": "Chart title",
-          "labels": ["Label1", "Label2"],
-          "datasets": [{ "label": "Series", "values": [10, 20] }]
-        }
-      ],
       "impacts_summary": [
         { "title": "Title", "description": "Brief description with citation [1]", "severity": 8 }
       ]
@@ -175,29 +203,12 @@ Return ONLY valid JSON matching this schema:
   "narrative_summary": "Multi-paragraph summary with in-text citations [1] [3] [5] throughout"
 }
 
-CHART RULES — THIS IS CRITICAL:
-- Every chart MUST make logical sense. The labels and datasets must have a coherent relationship.
-- A bar chart comparing items must compare THE SAME UNIT across different categories (e.g., "GDP impact in $B" across countries, or "price change %" across commodities)
-- NEVER mix unrelated metrics on the same chart (e.g., do NOT plot "deaths" against "ceasefire status" or "oil price" against "refugee count")
-- NEVER use boolean/status values as numeric data points
-- Each chart must have a clear, specific unit of measurement (dollars, percentages, barrels, tons, etc.)
-- Use ONLY these chart patterns:
-  * BAR: Compare the same metric across different categories (e.g., "Oil Price Change by Region ($)" with labels ["Asia", "Europe", "Americas"])
-  * LINE: Show how ONE metric changes over time (e.g., "Brent Crude Price Projection ($/barrel)" with labels ["Q1", "Q2", "Q3", "Q4"])
-  * PIE/DONUT: Show parts of a whole that add up to ~100% (e.g., "Global Oil Transit Share (%)" with labels ["Hormuz", "Malacca", "Suez", "Other"])
-  * AREA: Show cumulative or stacked trends over time
-- Use REAL numbers from the articles. If articles say "20% of global oil passes through Hormuz", use that exact figure.
-- If you cannot find a specific number in the articles for a chart, DO NOT make one up. Skip the chart for that sector instead.
-- Maximum 1-2 charts per sector. Quality over quantity.
-- datasets[].values MUST match labels array length
-- Chart titles must include the unit in parentheses, e.g., "Impact on Oil Prices ($/barrel)"
-
-OTHER RULES:
-- USE IN-TEXT CITATIONS: reference articles as [1], [2], [3] etc. matching the article numbers provided
-- Include citations in summary_blurb, worldwide_implications, narrative_summary, impact descriptions, and hidden factor explanations
+Rules:
+- USE IN-TEXT CITATIONS: reference articles as [1], [2], [3] etc.
 - narrative_summary should be 2-3 paragraphs with citations throughout
 - 2-4 hidden factors
-- Return ONLY the JSON object, no markdown, no explanation`;
+- Do NOT include any "charts" field — charts are generated separately
+- Return ONLY the JSON, no explanation`;
 
 // ─── EXPORTS ───
 
@@ -214,29 +225,123 @@ export async function analyzeConsistency(event, sources, opts = {}) {
   const articles = await fetchArticles(event, sources, opts.newsApiKey);
   const articleText = formatArticlesForLLM(articles);
   const prompt = buildUserPrompt(event, sources, articleText) + '\n\nAnalyze these real articles and produce the consistency report JSON.';
-  return callLLM(CONSISTENCY_SYSTEM, prompt, opts);
+  const raw = await callLLM(CONSISTENCY_SYSTEM, prompt, opts);
+  return validateConsistency(raw);
 }
 
 export async function analyzeCascade(event, sources, opts = {}) {
   const articles = await fetchArticles(event, sources, opts.newsApiKey);
   const articleText = formatArticlesForLLM(articles);
   const prompt = buildUserPrompt(event, sources, articleText) + '\n\nBased on these real articles, produce the cascading impact breakdown JSON.';
-  return callLLM(CASCADE_SYSTEM, prompt, opts);
+  const raw = await callLLM(CASCADE_SYSTEM, prompt, opts);
+  return validateCascade(raw);
 }
 
-export async function analyzeSummary(event, sources, opts = {}) {
+export async function analyzeSummary(event, sources, opts = {}, cascadeData = null) {
   const articles = await fetchArticles(event, sources, opts.newsApiKey);
   const articleText = formatArticlesForLLM(articles);
-  const prompt = buildUserPrompt(event, sources, articleText) + '\n\nBased on these real articles, produce the summary infographic JSON with chart data.';
-  const result = await callLLM(SUMMARY_SYSTEM, prompt, opts);
+  const basePrompt = buildUserPrompt(event, sources, articleText);
 
-  // Attach the real article sources to the response
-  result.sources_used = articles.map(a => ({
+  // Build cascade context for the LLM so charts reflect step 3
+  let cascadeContext = '';
+  if (cascadeData?.sectors?.length > 0) {
+    const sectorSummaries = cascadeData.sectors.map(s => {
+      const topImpacts = (s.impacts || []).slice(0, 3).map(i =>
+        `  - ${i.title} (severity: ${i.severity}/10, ${i.type}): ${i.description}`
+      ).join('\n');
+      return `${s.icon} ${s.name}:\n${topImpacts}`;
+    }).join('\n\n');
+
+    cascadeContext = `\n\n=== CASCADE ANALYSIS FROM STEP 3 (use these exact sectors and impacts) ===\n${sectorSummaries}\n=== END CASCADE ===`;
+  }
+
+  // Stage 1: Chart planning — LLM reasons about what charts would be compelling
+  console.log('[summary] Stage 1: Planning charts...');
+  let chartPlans = [];
+  try {
+    const planPrompt = basePrompt + cascadeContext + '\n\nAnalyze these articles and the cascade analysis. Propose compelling chart visualizations that illustrate the impacts identified above.';
+    const planRaw = await callLLM(SUMMARY_CHART_PLANNING_SYSTEM, planPrompt, opts);
+    chartPlans = Array.isArray(planRaw.chart_plans) ? planRaw.chart_plans : [];
+    console.log(`[summary] Stage 1 complete: ${chartPlans.length} chart plans`);
+    for (const p of chartPlans) {
+      console.log(`  → ${p.sector}: "${p.title}" (${p.chart_type}) — ${p.argument?.slice(0, 60)}...`);
+    }
+  } catch (e) {
+    console.warn('[summary] Stage 1 failed, continuing without charts:', e.message);
+  }
+
+  // Stage 2: Validate chart plans deterministically
+  const chartsBySector = {};
+  for (const plan of chartPlans) {
+    if (!plan || !plan.sector || !plan.title) continue;
+    const labels = Array.isArray(plan.labels) ? plan.labels.map(String) : [];
+    let values = Array.isArray(plan.values) ? plan.values.map(v => Number(v) || 0) : [];
+
+    if (values.length > labels.length) values = values.slice(0, labels.length);
+    while (values.length < labels.length) values.push(0);
+
+    if (labels.length < 2) continue;
+    if (values.every(v => v === values[0])) continue;
+
+    const chartType = ['bar', 'line', 'pie', 'donut', 'area'].includes(plan.chart_type) ? plan.chart_type : 'bar';
+    if ((chartType === 'pie' || chartType === 'donut') && values.some(v => v < 0)) continue;
+
+    const chart = {
+      chart_type: chartType,
+      title: String(plan.title),
+      labels,
+      datasets: [{ label: String(plan.dataset_label || plan.unit || 'Value'), values }],
+    };
+
+    const sector = String(plan.sector);
+    if (!chartsBySector[sector]) chartsBySector[sector] = [];
+    if (chartsBySector[sector].length < 2) {
+      chartsBySector[sector].push(chart);
+    }
+  }
+  console.log(`[summary] Stage 2: Validated charts for ${Object.keys(chartsBySector).length} sectors`);
+
+  // Stage 3: Generate narrative — constrained to the same sectors from cascade
+  console.log('[summary] Stage 3: Generating narrative...');
+  const narrativePrompt = basePrompt + cascadeContext + '\n\nWrite the narrative analysis. Use the SAME sectors from the cascade analysis above.';
+  const narrativeRaw = await callLLM(SUMMARY_NARRATIVE_SYSTEM, narrativePrompt, opts);
+  const validated = validateSummary(narrativeRaw);
+
+  // Merge charts into matching sectors (fuzzy match)
+  for (const sector of validated.sectors) {
+    const sectorLower = sector.name.toLowerCase();
+    const matched = [];
+    for (const [key, charts] of Object.entries(chartsBySector)) {
+      if (sectorLower.includes(key.toLowerCase()) || key.toLowerCase().includes(sectorLower)) {
+        matched.push(...charts);
+      }
+    }
+    sector.charts = matched.length > 0 ? matched : (sector.charts ?? []);
+  }
+
+  // Unmatched charts — try partial word match
+  for (const [sectorName, charts] of Object.entries(chartsBySector)) {
+    const alreadyMatched = validated.sectors.some(s =>
+      s.name.toLowerCase().includes(sectorName.toLowerCase()) ||
+      sectorName.toLowerCase().includes(s.name.toLowerCase())
+    );
+    if (!alreadyMatched && charts.length > 0) {
+      const existing = validated.sectors.find(s =>
+        s.name.toLowerCase().split(/\s+/).some(w => sectorName.toLowerCase().includes(w))
+      );
+      if (existing && (existing.charts ?? []).length < 2) {
+        existing.charts = [...(existing.charts ?? []), ...charts.slice(0, 2 - (existing.charts?.length ?? 0))];
+      }
+    }
+  }
+
+  // Attach article sources for in-text citations
+  validated.sources_used = articles.map(a => ({
     source: a.source,
     title: a.title,
     url: a.url,
     publishedAt: a.publishedAt,
   }));
 
-  return result;
+  return validated;
 }

@@ -89,30 +89,6 @@ export function SummaryPage() {
         </div>
       )}
 
-      {sourcesUsed.length > 0 && (
-        <div className={styles.sourcesSection}>
-          <p className={styles.sourcesLabel}>Sources ({sourcesUsed.length} articles)</p>
-          <ul className={styles.sourcesList}>
-            {sourcesUsed.map((article, i) => (
-              <li key={i} className={styles.sourceItem}>
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.sourceLink}
-                >
-                  {article.title || 'Untitled'}
-                </a>
-                <span className={styles.sourceMeta}>
-                  {article.source}
-                  {article.publishedAt && ` · ${new Date(article.publishedAt).toLocaleDateString()}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       <div className={styles.navigationButtons}>
         <button
           type="button"

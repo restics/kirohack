@@ -50,13 +50,13 @@ app.post('/api/cascade', async (req, res) => {
 
 app.post('/api/summary', async (req, res) => {
   try {
-    const { event, sources } = req.body;
+    const { event, sources, cascadeData } = req.body;
     if (!event || !sources?.length) {
       return res.status(400).json({ error: 'Missing event or sources' });
     }
     const opts = extractOpts(req.body);
-    console.log(`[summary] "${event.slice(0, 60)}..."`);
-    const result = await analyzeSummary(event, sources, opts);
+    console.log(`[summary] "${event.slice(0, 60)}..." (${cascadeData?.sectors?.length ?? 0} sectors from cascade)`);
+    const result = await analyzeSummary(event, sources, opts, cascadeData);
     res.json(result);
   } catch (err) {
     console.error('[summary] Error:', err.message);
