@@ -1,8 +1,10 @@
-import type { HiddenFactorSummary } from '../types/index';
+import type { HiddenFactorSummary, SourceArticle } from '../types/index';
+import { CitedText } from './CitedText';
 import styles from './HiddenFactorsCallout.module.css';
 
 interface HiddenFactorsCalloutProps {
   factors: HiddenFactorSummary[];
+  sources?: SourceArticle[];
 }
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
@@ -17,7 +19,7 @@ function getCategoryStyle(category: string) {
   return CATEGORY_COLORS[category] || { bg: 'rgba(113, 113, 122, 0.1)', text: '#71717a' };
 }
 
-export function HiddenFactorsCallout({ factors }: HiddenFactorsCalloutProps) {
+export function HiddenFactorsCallout({ factors, sources = [] }: HiddenFactorsCalloutProps) {
   if (factors.length === 0) return null;
 
   return (
@@ -50,7 +52,9 @@ export function HiddenFactorsCallout({ factors }: HiddenFactorsCalloutProps) {
                   {factor.category}
                 </span>
               </div>
-              <p className={styles.factorExplanation}>{factor.explanation}</p>
+              <p className={styles.factorExplanation}>
+                <CitedText text={factor.explanation} sources={sources} />
+              </p>
             </div>
           );
         })}

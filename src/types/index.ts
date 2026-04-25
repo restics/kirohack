@@ -85,10 +85,18 @@ export interface HiddenFactorSummary {
   explanation: string;
 }
 
+export interface SourceArticle {
+  source: string;
+  title: string;
+  url: string;
+  publishedAt: string;
+}
+
 export interface SummaryData {
   sectors: SummarySector[];
   hidden_factors_summary: HiddenFactorSummary[];
   narrative_summary: string;
+  sources_used?: SourceArticle[];
 }
 
 // === Wizard State ===

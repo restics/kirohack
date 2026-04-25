@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import type { SummarySector } from '../types/index';
+import type { SummarySector, SourceArticle } from '../types/index';
 import { ChartRenderer } from './ChartRenderer';
+import { CitedText } from './CitedText';
 import styles from './SectorSection.module.css';
 
 interface SectorSectionProps {
   sector: SummarySector;
   sectorIndex: number;
+  sources?: SourceArticle[];
 }
 
 const SECTOR_COLORS = [
@@ -82,7 +84,7 @@ function getSeverityColor(severity: number): string {
   return '#22c55e';
 }
 
-export function SectorSection({ sector, sectorIndex }: SectorSectionProps) {
+export function SectorSection({ sector, sectorIndex, sources = [] }: SectorSectionProps) {
   const { ref: sectionRef, isInView: sectionVisible } = useInView(0.1);
   const { ref: chartRef, isInView: chartVisible } = useInView(0.1);
   const sectorColor = SECTOR_COLORS[sectorIndex % SECTOR_COLORS.length];
@@ -99,7 +101,9 @@ export function SectorSection({ sector, sectorIndex }: SectorSectionProps) {
         <span style={{ color: sectorColor }}>{sector.name}</span>
       </h3>
 
-      <p className={styles.blurb}>{sector.summary_blurb}</p>
+      <p className={styles.blurb}>
+        <CitedText text={sector.summary_blurb} sources={sources} />
+      </p>
 
       <div ref={chartRef} className={styles.chartsGrid}>
         {sector.charts.map((chart, i) => (
@@ -118,7 +122,9 @@ export function SectorSection({ sector, sectorIndex }: SectorSectionProps) {
             <GlobeIcon />
             Worldwide Implications
           </p>
-          <p className={styles.implicationsText}>{sector.worldwide_implications}</p>
+          <p className={styles.implicationsText}>
+            <CitedText text={sector.worldwide_implications} sources={sources} />
+          </p>
         </div>
       )}
 
@@ -134,7 +140,9 @@ export function SectorSection({ sector, sectorIndex }: SectorSectionProps) {
               </span>
               <div>
                 <p className={styles.impactTitle}>{impact.title}</p>
-                <p className={styles.impactDesc}>{impact.description}</p>
+                <p className={styles.impactDesc}>
+                  <CitedText text={impact.description} sources={sources} />
+                </p>
               </div>
             </li>
           ))}

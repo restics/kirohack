@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useWizard } from '../context/WizardContext';
 import { SectorSection } from '../components/SectorSection';
 import { HiddenFactorsCallout } from '../components/HiddenFactorsCallout';
+import { CitedText } from '../components/CitedText';
 import styles from './SummaryPage.module.css';
 
 export function SummaryPage() {
@@ -51,6 +52,7 @@ export function SummaryPage() {
   const sectors = summaryData?.sectors ?? [];
   const hiddenFactors = summaryData?.hidden_factors_summary ?? [];
   const narrative = summaryData?.narrative_summary ?? '';
+  const sourcesUsed = summaryData?.sources_used ?? [];
 
   return (
     <div className={styles.page}>
@@ -72,15 +74,42 @@ export function SummaryPage() {
           key={sector.name}
           sector={sector}
           sectorIndex={index}
+          sources={sourcesUsed}
         />
       ))}
 
-      <HiddenFactorsCallout factors={hiddenFactors} />
+      <HiddenFactorsCallout factors={hiddenFactors} sources={sourcesUsed} />
 
       {narrative && (
         <div className={styles.narrative}>
           <p className={styles.narrativeLabel}>Summary</p>
-          <p className={styles.narrativeText}>{narrative}</p>
+          <p className={styles.narrativeText}>
+            <CitedText text={narrative} sources={sourcesUsed} />
+          </p>
+        </div>
+      )}
+
+      {sourcesUsed.length > 0 && (
+        <div className={styles.sourcesSection}>
+          <p className={styles.sourcesLabel}>Sources ({sourcesUsed.length} articles)</p>
+          <ul className={styles.sourcesList}>
+            {sourcesUsed.map((article, i) => (
+              <li key={i} className={styles.sourceItem}>
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.sourceLink}
+                >
+                  {article.title || 'Untitled'}
+                </a>
+                <span className={styles.sourceMeta}>
+                  {article.source}
+                  {article.publishedAt && ` · ${new Date(article.publishedAt).toLocaleDateString()}`}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

@@ -140,9 +140,9 @@ Rules:
 - Realistic severity and confidence scores based on article evidence
 - Return ONLY the JSON object, no markdown, no explanation`;
 
-const SUMMARY_SYSTEM = `You are an expert economic analyst. You will be given a news event and REAL ARTICLES about it.
+const SUMMARY_SYSTEM = `You are an expert economic analyst. You will be given a news event and REAL ARTICLES about it. Each article is numbered [Article 1], [Article 2], etc.
 
-Based on the REAL information, produce a comprehensive summary with chart-ready data.
+Based on the REAL information, produce a comprehensive summary with chart-ready data and IN-TEXT CITATIONS.
 
 Return ONLY valid JSON matching this schema:
 {
@@ -150,8 +150,8 @@ Return ONLY valid JSON matching this schema:
     {
       "name": "Sector Name",
       "icon": "emoji",
-      "summary_blurb": "1-3 sentences",
-      "worldwide_implications": "Global impact description",
+      "summary_blurb": "1-3 sentences with citations like [1] [2]",
+      "worldwide_implications": "Global impact description with citations [3]",
       "charts": [
         {
           "chart_type": "bar" | "pie" | "donut" | "line" | "area",
@@ -161,7 +161,7 @@ Return ONLY valid JSON matching this schema:
         }
       ],
       "impacts_summary": [
-        { "title": "Title", "description": "Brief", "severity": 8 }
+        { "title": "Title", "description": "Brief description with citation [1]", "severity": 8 }
       ]
     }
   ],
@@ -169,18 +169,33 @@ Return ONLY valid JSON matching this schema:
     {
       "factor": "Factor name",
       "category": "Environmental Debt" | "Social Capital" | "Supply Chain Ripple" | "Regulatory Risk" | "Labor Market Shift",
-      "explanation": "2-3 sentences"
+      "explanation": "2-3 sentences with citations [2] [4]"
     }
   ],
-  "narrative_summary": "Multi-paragraph summary text"
+  "narrative_summary": "Multi-paragraph summary with in-text citations [1] [3] [5] throughout"
 }
 
-Rules:
-- Ground charts and data in REAL information from the articles
-- Each sector needs 1-2 charts with realistic numeric data from articles
-- Vary chart types across sectors
+CHART RULES — THIS IS CRITICAL:
+- Every chart MUST make logical sense. The labels and datasets must have a coherent relationship.
+- A bar chart comparing items must compare THE SAME UNIT across different categories (e.g., "GDP impact in $B" across countries, or "price change %" across commodities)
+- NEVER mix unrelated metrics on the same chart (e.g., do NOT plot "deaths" against "ceasefire status" or "oil price" against "refugee count")
+- NEVER use boolean/status values as numeric data points
+- Each chart must have a clear, specific unit of measurement (dollars, percentages, barrels, tons, etc.)
+- Use ONLY these chart patterns:
+  * BAR: Compare the same metric across different categories (e.g., "Oil Price Change by Region ($)" with labels ["Asia", "Europe", "Americas"])
+  * LINE: Show how ONE metric changes over time (e.g., "Brent Crude Price Projection ($/barrel)" with labels ["Q1", "Q2", "Q3", "Q4"])
+  * PIE/DONUT: Show parts of a whole that add up to ~100% (e.g., "Global Oil Transit Share (%)" with labels ["Hormuz", "Malacca", "Suez", "Other"])
+  * AREA: Show cumulative or stacked trends over time
+- Use REAL numbers from the articles. If articles say "20% of global oil passes through Hormuz", use that exact figure.
+- If you cannot find a specific number in the articles for a chart, DO NOT make one up. Skip the chart for that sector instead.
+- Maximum 1-2 charts per sector. Quality over quantity.
 - datasets[].values MUST match labels array length
-- narrative_summary should be 2-3 paragraphs referencing real article findings
+- Chart titles must include the unit in parentheses, e.g., "Impact on Oil Prices ($/barrel)"
+
+OTHER RULES:
+- USE IN-TEXT CITATIONS: reference articles as [1], [2], [3] etc. matching the article numbers provided
+- Include citations in summary_blurb, worldwide_implications, narrative_summary, impact descriptions, and hidden factor explanations
+- narrative_summary should be 2-3 paragraphs with citations throughout
 - 2-4 hidden factors
 - Return ONLY the JSON object, no markdown, no explanation`;
 
@@ -213,5 +228,15 @@ export async function analyzeSummary(event, sources, opts = {}) {
   const articles = await fetchArticles(event, sources, opts.newsApiKey);
   const articleText = formatArticlesForLLM(articles);
   const prompt = buildUserPrompt(event, sources, articleText) + '\n\nBased on these real articles, produce the summary infographic JSON with chart data.';
-  return callLLM(SUMMARY_SYSTEM, prompt, opts);
+  const result = await callLLM(SUMMARY_SYSTEM, prompt, opts);
+
+  // Attach the real article sources to the response
+  result.sources_used = articles.map(a => ({
+    source: a.source,
+    title: a.title,
+    url: a.url,
+    publishedAt: a.publishedAt,
+  }));
+
+  return result;
 }
