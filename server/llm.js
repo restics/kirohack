@@ -1,36 +1,31 @@
-import Anthropic from '@anthropic-ai/sdk';
+import Groq from 'groq-sdk';
 import { fetchArticles, formatArticlesForLLM } from './news.js';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
-
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('ERROR: ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key.');
+if (!process.env.GROQ_API_KEY) {
+  console.error('ERROR: GROQ_API_KEY is not set. Add it to your .env file.');
   process.exit(1);
 }
 
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+
 async function callLLM(systemPrompt, userPrompt) {
-  const response = await client.messages.create({
+  const response = await client.chat.completions.create({
     model: MODEL,
     max_tokens: 8192,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
+    temperature: 0.3,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
   });
 
-  const content = response.content[0];
-  if (content.type !== 'text') throw new Error('Unexpected response type');
-
-  const text = content.text;
-
-  // Extract JSON from response (handle markdown code blocks)
-  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const jsonStr = jsonMatch ? jsonMatch[1].trim() : text.trim();
+  const text = response.choices[0]?.message?.content;
+  if (!text) throw new Error('Empty response from Groq');
 
   try {
-    return JSON.parse(jsonStr);
+    return JSON.parse(text);
   } catch (e) {
     console.error('Failed to parse LLM JSON. Raw:', text.slice(0, 500));
     throw new Error('LLM returned invalid JSON');

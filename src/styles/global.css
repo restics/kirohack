@@ -1,128 +1,80 @@
 @import './variables.css';
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-text);
+  background: linear-gradient(180deg, #FAFAF7 0%, #F4F2EC 30%, #FAFAF7 100%);
+  color: var(--text-deep);
   font-family: var(--font-family);
-  font-weight: var(--font-normal);
-  line-height: var(--leading-normal);
+  font-weight: 400;
+  line-height: 1.5;
   min-height: 100vh;
   overflow-x: hidden;
-  /* Subtle dot grid background for depth */
-  background-image: radial-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+  color: #1E40AF;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-full);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-muted);
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
-}
-
-/* Base link styles */
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-a:hover {
-  color: var(--color-primary-hover);
-}
-
-/* Base button reset */
-button {
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: var(--color-text);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* Focus styles */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--accent-electric);
   outline-offset: 2px;
 }
 
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--color-text);
-  font-weight: var(--font-semibold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.12); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(15, 23, 42, 0.2); }
+* { scrollbar-width: thin; scrollbar-color: rgba(15,23,42,0.12) transparent; }
 
-p {
-  color: var(--color-text-secondary);
-}
+a { color: var(--accent-ocean); text-decoration: none; }
+button { font-family: var(--font-family); cursor: pointer; border: none; background: none; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+h1, h2, h3, h4, h5, h6 { color: var(--text-deep); font-weight: 600; line-height: 1.25; letter-spacing: -0.025em; }
+p { color: var(--text-soft); }
 
-/* Selection */
-::selection {
-  background: var(--color-primary);
-  color: white;
-}
-
-/* Shared pulsing loader */
-@keyframes pulseRing {
-  0% {
-    transform: scale(0.8);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 1;
-  }
-}
-
+/* Keyframes */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { background-position: 0% 0; }
+  100% { background-position: 250% 0; }
 }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes auroraFloat1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 25px); }
+}
+
+@keyframes auroraFloat2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -35px); }
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+/* Custom cursor disabled */

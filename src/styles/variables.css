@@ -1,104 +1,83 @@
 :root {
-  /* Dark theme colors — wider contrast between layers */
-  --color-background: #0a0a0f;
-  --color-surface: #141419;
-  --color-card: #1c1c24;
-  --color-border: #2e2e3a;
-  --color-border-subtle: #23232e;
-  --color-text: #f0f0f5;
-  --color-text-secondary: #a0a0b0;
-  --color-muted: #6b6b80;
+  /* Light premium palette */
+  --bg-pearl: #FAFAF7;
+  --bg-cream: #F4F2EC;
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --accent-ocean: #1E40AF;
+  --accent-electric: #3B82F6;
+  --accent-iris: #6366F1;
+  --accent-violet: #8B5CF6;
+  --accent-coral: #F97316;
+  --accent-sage: #10B981;
+  --text-deep: #0F172A;
+  --text-soft: #475569;
+  --text-muted: #94A3B8;
+  --border-soft: rgba(15, 23, 42, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.2);
 
-  /* Accent colors - more sophisticated */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-primary-subtle: rgba(59, 130, 246, 0.1);
-  --color-success: #10b981;
-  --color-success-subtle: rgba(16, 185, 129, 0.1);
-  --color-warning: #f59e0b;
-  --color-warning-subtle: rgba(245, 158, 11, 0.1);
-  --color-error: #ef4444;
-  --color-error-subtle: rgba(239, 68, 68, 0.1);
+  /* Legacy compat */
+  --color-background: var(--bg-pearl);
+  --color-surface: #FFFFFF;
+  --color-card: var(--bg-card);
+  --color-border: rgba(15, 23, 42, 0.1);
+  --color-border-subtle: rgba(15, 23, 42, 0.05);
+  --color-text: var(--text-deep);
+  --color-text-secondary: var(--text-soft);
+  --color-muted: var(--text-muted);
+  --color-primary: var(--accent-electric);
+  --color-primary-hover: var(--accent-ocean);
+  --color-primary-subtle: rgba(59, 130, 246, 0.08);
+  --color-success: var(--accent-sage);
+  --color-success-subtle: rgba(16, 185, 129, 0.08);
+  --color-warning: var(--accent-coral);
+  --color-warning-subtle: rgba(249, 115, 22, 0.08);
+  --color-error: #EF4444;
+  --color-error-subtle: rgba(239, 68, 68, 0.08);
+  --gradient-primary: linear-gradient(135deg, var(--accent-ocean), var(--accent-iris));
+  --gradient-subtle: linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%);
 
-  /* Gradient accents */
-  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-subtle: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+  /* Sector colors */
+  --sector-color-0: #1E40AF;
+  --sector-color-1: #10B981;
+  --sector-color-2: #F97316;
+  --sector-color-3: #EF4444;
+  --sector-color-4: #6366F1;
+  --sector-color-5: #06B6D4;
+  --sector-color-6: #EC4899;
+  --sector-color-7: #14B8A6;
+  --sector-color-8: #F59E0B;
+  --sector-color-9: #8B5CF6;
 
-  /* Sector color palette (10 colors) - refined */
-  --sector-color-0: #3b82f6;
-  --sector-color-1: #10b981;
-  --sector-color-2: #f59e0b;
-  --sector-color-3: #ef4444;
-  --sector-color-4: #8b5cf6;
-  --sector-color-5: #06b6d4;
-  --sector-color-6: #ec4899;
-  --sector-color-7: #14b8a6;
-  --sector-color-8: #f97316;
-  --sector-color-9: #6366f1;
+  /* Spacing */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px;
 
-  /* Spacing scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-20: 80px;
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', 'Playfair Display', Georgia, serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+  --font-size-xs: 0.75rem; --font-size-sm: 0.875rem; --font-size-base: 1rem;
+  --font-size-lg: 1.125rem; --font-size-xl: 1.25rem; --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem; --font-size-4xl: 2.5rem; --font-size-5xl: 3rem;
+  --font-normal: 400; --font-medium: 500; --font-semibold: 600; --font-bold: 700;
+  --leading-tight: 1.25; --leading-normal: 1.5; --leading-relaxed: 1.625;
+  --tracking-tight: -0.025em; --tracking-normal: 0; --tracking-wide: 0.025em;
 
-  /* Typography - Inter-like system stack */
-  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 2rem;
-  --font-size-4xl: 2.5rem;
-  --font-size-5xl: 3rem;
+  /* Radius */
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+  --radius-xl: 12px; --radius-2xl: 16px; --radius-full: 9999px;
 
-  /* Font weights */
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
+  /* Shadows — light theme */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-xl: 0 20px 48px rgba(15, 23, 42, 0.1);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.12);
+  --shadow-glow-lg: 0 0 40px rgba(59, 130, 246, 0.15);
+  --shadow-card-hover: 0 20px 48px rgba(30, 64, 175, 0.12), 0 8px 16px rgba(99, 102, 241, 0.08);
 
-  /* Line heights */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-
-  /* Letter spacing */
-  --tracking-tight: -0.025em;
-  --tracking-normal: 0;
-  --tracking-wide: 0.025em;
-
-  /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-2xl: 16px;
-  --radius-full: 9999px;
-
-  /* Shadows — stronger for dark backgrounds */
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.35), 0 4px 8px -4px rgba(0, 0, 0, 0.25);
-  --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.4), 0 8px 12px -6px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.18);
-  --shadow-glow-lg: 0 0 40px rgba(59, 130, 246, 0.25);
-  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 1px rgba(59, 130, 246, 0.15);
-
-  /* Transition durations */
-  --duration-fast: 150ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
+  --duration-fast: 150ms; --duration-normal: 200ms; --duration-slow: 300ms;
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }

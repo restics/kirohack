@@ -13,14 +13,20 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.0",
     "chart.js": "^4.5.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fast-check": "^4.7.0",
+    "framer-motion": "^12.38.0",
+    "groq-sdk": "^1.1.2",
+    "lucide-react": "^1.11.0",
     "react": "^19.2.5",
     "react-chartjs-2": "^5.3.1",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
