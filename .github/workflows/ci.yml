@@ -8,7 +8,26 @@ on:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Unit tests (no API key needed, fast)
+  # 1. Lint
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # ---------------------------------------------------------------------------
+  # 2. Unit tests (no API key needed, fast)
   # ---------------------------------------------------------------------------
   unit-tests:
     name: Unit Tests
