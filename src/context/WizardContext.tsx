@@ -22,10 +22,11 @@ type WizardAction =
 // --- Initial State ---
 
 export const initialState: WizardState = {
-  currentStep: 0,
+  currentStep: -1,
   stepStatuses: ["idle", "idle", "idle", "idle"],
   newsEvent: "",
   selectedSources: [],
+  selectedFactIds: [],
   consistencyReport: null,
   cascadeData: null,
   summaryData: null,

@@ -1,5 +1,6 @@
 import { WizardProvider, useWizard } from './context/WizardContext';
 import { WizardStepper } from './components/WizardStepper';
+import { HomePage } from './pages/HomePage';
 import { InputPage } from './pages/InputPage';
 import { ConsistencyPage } from './pages/ConsistencyPage';
 import { BreakdownPage } from './pages/BreakdownPage';
@@ -8,6 +9,10 @@ import styles from './App.module.css';
 
 function PageRouter() {
   const { state } = useWizard();
+
+  if (state.currentStep === -1) {
+    return <HomePage />;
+  }
 
   const pages: Record<number, React.ReactNode> = {
     0: <InputPage />,

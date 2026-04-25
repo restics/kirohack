@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest --run",
-    "server": "node --experimental-vm-modules --loader ts-node/esm server/index.ts",
-    "server:dev": "npx tsx watch server/index.ts"
+    "server": "node node_modules/tsx/dist/cli.mjs server/index.ts",
+    "server:dev": "node node_modules/tsx/dist/cli.mjs watch server/index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.3",

@@ -4,14 +4,13 @@ Analyzes news events and produces cascading economic impact reports across secto
 
 ## Quick Start
 
-### 1. Set your OpenAI API key
+### 1. Set your OpenRouter API key
+
+Copy the example env file and fill in your key:
 
 ```bash
-# Windows
-set OPENAI_API_KEY=sk-...
-
-# macOS/Linux
-export OPENAI_API_KEY=sk-...
+cp .env.example .env
+# then edit .env and set OPENROUTER_API_KEY=sk-or-...
 ```
 
 ### 2. Start the backend (port 3001)
@@ -50,6 +49,6 @@ All POST endpoints accept `{ "event": "string", "sources": ["NYT", "Reuters", ..
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OPENAI_API_KEY` | — | Required. Your OpenAI API key |
-| `OPENAI_MODEL` | `gpt-4o-mini` | Model to use |
+| `OPENROUTER_API_KEY` | — | Required. Your OpenRouter API key (openrouter.ai) |
+| `OPENROUTER_MODEL` | `anthropic/claude-3.5-haiku` | Any model slug from openrouter.ai/models |
 | `PORT` | `3001` | Backend port |
