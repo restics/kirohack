@@ -252,6 +252,9 @@ export function ConsistencyPage() {
   const inconsistentPct = (inconsistentCount / total) * 100;
   const unverifiedPct = (unverifiedCount / total) * 100;
 
+  // Sort facts by agreement percentage descending
+  const sortedFacts = [...report.facts].sort((a, b) => b.agreement_percentage - a.agreement_percentage);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -285,7 +288,7 @@ export function ConsistencyPage() {
           </div>
         </div>
         <ul className={styles.factList} aria-label="Fact items">
-          {report.facts.map((fact) => (
+          {sortedFacts.map((fact) => (
             <FactItemComponent
               key={fact.id}
               fact={fact}

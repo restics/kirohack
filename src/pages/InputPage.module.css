@@ -61,7 +61,7 @@
 .textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-subtle);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle), 0 0 20px rgba(59, 130, 246, 0.1);
 }
 
 .textareaError {
@@ -152,23 +152,28 @@
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-out);
   text-align: left;
 }
 
 .sourceCard:hover {
   border-color: var(--color-text-secondary);
   background: var(--color-card);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .sourceCardSelected {
   border-color: var(--color-primary);
   background: var(--color-primary-subtle);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
 }
 
 .sourceCardSelected:hover {
   border-color: var(--color-primary);
   background: var(--color-primary-subtle);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
 }
 
 .sourceCardHeader {

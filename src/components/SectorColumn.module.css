@@ -3,10 +3,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  background-color: var(--color-surface);
+  background: rgba(20, 20, 25, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-5);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.column:hover {
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 .header {
@@ -32,6 +40,11 @@
   width: 20px;
   height: 20px;
   color: var(--color-primary);
+}
+
+.sectorEmoji {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .sectorName {
