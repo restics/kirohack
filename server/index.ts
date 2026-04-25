@@ -287,18 +287,6 @@ CRITICAL: Your ENTIRE response must be a single valid JSON object. No prose, no 
 
 Return ONLY a valid JSON object with this exact structure:
 {
-  "sources": [
-    { "title": "<article title>", "url": "<full URL>" }
-  ],
-  "sectors": [
-    {
-const CASCADE_SYSTEM = `You are an expert economic analyst specializing in cascading economic impacts.
-Given a news event and sources, search the web for real reporting and economic analysis, then return a cascading impact breakdown.
-
-CRITICAL: Your ENTIRE response must be a single valid JSON object. No prose, no markdown, no code fences. Start with { and end with }.
-
-Return ONLY a valid JSON object with this exact structure:
-{
   "sectors": [
     {
       "name": "<sector name>",
