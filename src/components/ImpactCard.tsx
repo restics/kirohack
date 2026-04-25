@@ -16,8 +16,9 @@ function sortBySeverity(impacts: Impact[]): Impact[] {
 }
 
 function countAllChildren(impact: Impact): number {
-  let count = impact.children.length;
-  for (const child of impact.children) {
+  const children = impact.children ?? [];
+  let count = children.length;
+  for (const child of children) {
     count += countAllChildren(child);
   }
   return count;
@@ -59,7 +60,7 @@ export function ImpactCard({
 
   const borderClass = impact.type === 'direct' ? styles.direct : styles.indirect;
   const badgeClass = impact.type === 'direct' ? styles.typeBadgeDirect : styles.typeBadgeIndirect;
-  const sortedChildren = sortBySeverity(impact.children);
+  const sortedChildren = sortBySeverity(impact.children ?? []);
   const hasChildren = sortedChildren.length > 0;
   const totalDescendants = countAllChildren(impact);
 
@@ -91,11 +92,11 @@ export function ImpactCard({
 
         {isExpanded && (
           <div className={styles.detail}>
-            {impact.causal_chain.length > 0 && (
+            {(impact.causal_chain ?? []).length > 0 && (
               <div className={styles.detailSection}>
                 <span className={styles.detailLabel}>Causal Chain</span>
                 <ol className={styles.causalChain}>
-                  {impact.causal_chain.map((step, i) => (
+                  {(impact.causal_chain ?? []).map((step, i) => (
                     <li key={i} className={styles.causalStep}>
                       <span className={styles.stepNumber}>{i + 1}.</span>
                       <span>{step}</span>
@@ -112,11 +113,11 @@ export function ImpactCard({
               </span>
             </div>
 
-            {impact.originating_facts.length > 0 && (
+            {(impact.originating_facts ?? []).length > 0 && (
               <div className={styles.detailSection}>
                 <span className={styles.detailLabel}>Originating Facts</span>
                 <ul className={styles.factsList}>
-                  {impact.originating_facts.map((fact, i) => (
+                  {(impact.originating_facts ?? []).map((fact, i) => (
                     <li key={i} className={styles.factChip}>{fact}</li>
                   ))}
                 </ul>

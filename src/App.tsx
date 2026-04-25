@@ -1,5 +1,6 @@
 import { WizardProvider, useWizard } from './context/WizardContext';
 import { WizardStepper } from './components/WizardStepper';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { HomePage } from './pages/HomePage';
 import { InputPage } from './pages/InputPage';
 import { ConsistencyPage } from './pages/ConsistencyPage';
@@ -48,7 +49,9 @@ function AppContent() {
       </header>
       {showStepper && <WizardStepper />}
       <main className={styles.main}>
-        <PageRouter />
+        <ErrorBoundary>
+          <PageRouter />
+        </ErrorBoundary>
       </main>
     </div>
   );

@@ -19,7 +19,7 @@ export function SectorColumn({ sector, sectorIndex }: SectorColumnProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [cascadeStates, setCascadeStates] = useState<Record<string, boolean>>({});
 
-  const sortedImpacts = useMemo(() => sortBySeverity(sector.impacts), [sector.impacts]);
+  const sortedImpacts = useMemo(() => sortBySeverity(sector.impacts ?? []), [sector.impacts]);
 
   const visibleImpacts = showAll ? sortedImpacts : sortedImpacts.slice(0, MAX_VISIBLE);
   const hasMore = sortedImpacts.length > MAX_VISIBLE;

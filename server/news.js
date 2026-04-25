@@ -1,4 +1,4 @@
-const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
+const NEWSAPI_KEY = null; // No server-side default — user must provide via UI
 
 // Map our UI source labels to search domains for better matching
 const SOURCE_DOMAINS = {
@@ -14,9 +14,10 @@ const SOURCE_DOMAINS = {
  * Fetch real articles from NewsAPI for a given event query and source list.
  * Uses domain-based filtering for much better source coverage on the free tier.
  */
-export async function fetchArticles(event, sources) {
-  if (!NEWSAPI_KEY) {
-    console.warn('[news] NEWSAPI_KEY not set — falling back to LLM-only analysis');
+export async function fetchArticles(event, sources, newsApiKey) {
+  const key = newsApiKey || NEWSAPI_KEY;
+  if (!key) {
+    console.warn('[news] No NewsAPI key — falling back to LLM-only analysis');
     return [];
   }
 
@@ -29,7 +30,7 @@ export async function fetchArticles(event, sources) {
 
   for (const domain of domains) {
     try {
-      const url = `https://newsapi.org/v2/everything?q=${query}&domains=${domain}&pageSize=3&sortBy=relevancy&language=en&apiKey=${NEWSAPI_KEY}`;
+      const url = `https://newsapi.org/v2/everything?q=${query}&domains=${domain}&pageSize=3&sortBy=relevancy&language=en&apiKey=${key}`;
       const res = await fetch(url);
       const data = await res.json();
 
@@ -56,7 +57,7 @@ export async function fetchArticles(event, sources) {
   // Strategy 2: Broad search to fill gaps if we didn't get enough
   if (articles.length < 5) {
     try {
-      const url = `https://newsapi.org/v2/everything?q=${query}&pageSize=10&sortBy=relevancy&language=en&apiKey=${NEWSAPI_KEY}`;
+      const url = `https://newsapi.org/v2/everything?q=${query}&pageSize=10&sortBy=relevancy&language=en&apiKey=${key}`;
       const res = await fetch(url);
       const data = await res.json();
 

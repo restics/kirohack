@@ -55,7 +55,7 @@ export function BreakdownPage() {
     );
   }
 
-  if (!cascadeData || cascadeData.sectors.length === 0) {
+  if (!cascadeData || !cascadeData.sectors || cascadeData.sectors.length === 0) {
     return (
       <div className={styles.container}>
         <h2 className={styles.heading}>Analyzing Impacts</h2>
@@ -66,9 +66,9 @@ export function BreakdownPage() {
     );
   }
 
-  const totalImpacts = cascadeData.sectors.reduce((sum, s) => sum + s.impacts.length, 0);
+  const totalImpacts = cascadeData.sectors.reduce((sum, s) => sum + (s.impacts?.length ?? 0), 0);
   const hiddenFactors = cascadeData.sectors.reduce((sum, s) => 
-    sum + s.impacts.filter(i => i.is_hidden_factor).length, 0);
+    sum + (s.impacts ?? []).filter(i => i.is_hidden_factor).length, 0);
 
   return (
     <div className={styles.container}>

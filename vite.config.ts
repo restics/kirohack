@@ -10,6 +10,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    hmr: {
+      timeout: 60000, // 60s timeout instead of default 30s
+    },
   },
   test: {
     globals: true,

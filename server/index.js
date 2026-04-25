@@ -9,14 +9,22 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+function extractOpts(body) {
+  return {
+    apiKey: body.apiKey || null,
+    newsApiKey: body.newsApiKey || null,
+  };
+}
+
 app.post('/api/consistency', async (req, res) => {
   try {
     const { event, sources } = req.body;
     if (!event || !sources?.length) {
       return res.status(400).json({ error: 'Missing event or sources' });
     }
-    console.log(`[consistency] Analyzing: "${event.slice(0, 80)}..." with ${sources.length} sources`);
-    const result = await analyzeConsistency(event, sources);
+    const opts = extractOpts(req.body);
+    console.log(`[consistency] "${event.slice(0, 60)}..." (${opts.apiKey ? 'anthropic' : opts.freeModel || 'default'})`);
+    const result = await analyzeConsistency(event, sources, opts);
     res.json(result);
   } catch (err) {
     console.error('[consistency] Error:', err.message);
@@ -30,8 +38,9 @@ app.post('/api/cascade', async (req, res) => {
     if (!event || !sources?.length) {
       return res.status(400).json({ error: 'Missing event or sources' });
     }
-    console.log(`[cascade] Analyzing: "${event.slice(0, 80)}..."`);
-    const result = await analyzeCascade(event, sources);
+    const opts = extractOpts(req.body);
+    console.log(`[cascade] "${event.slice(0, 60)}..."`);
+    const result = await analyzeCascade(event, sources, opts);
     res.json(result);
   } catch (err) {
     console.error('[cascade] Error:', err.message);
@@ -45,8 +54,9 @@ app.post('/api/summary', async (req, res) => {
     if (!event || !sources?.length) {
       return res.status(400).json({ error: 'Missing event or sources' });
     }
-    console.log(`[summary] Analyzing: "${event.slice(0, 80)}..."`);
-    const result = await analyzeSummary(event, sources);
+    const opts = extractOpts(req.body);
+    console.log(`[summary] "${event.slice(0, 60)}..."`);
+    const result = await analyzeSummary(event, sources, opts);
     res.json(result);
   } catch (err) {
     console.error('[summary] Error:', err.message);

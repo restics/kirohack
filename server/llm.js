@@ -1,43 +1,76 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchArticles, formatArticlesForLLM } from './news.js';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
+const DEFAULT_FREE_MODEL = 'openrouter/free';
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
-
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('ERROR: ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key.');
-  process.exit(1);
+/**
+ * opts: { apiKey?, newsApiKey? }
+ */
+async function callLLM(systemPrompt, userPrompt, opts = {}) {
+  if (opts.apiKey) {
+    return callAnthropic(systemPrompt, userPrompt, opts.apiKey);
+  }
+  return callOpenRouter(systemPrompt, userPrompt, DEFAULT_FREE_MODEL);
 }
 
-async function callLLM(systemPrompt, userPrompt) {
+async function callAnthropic(systemPrompt, userPrompt, apiKey) {
+  const client = new Anthropic({ apiKey });
   const response = await client.messages.create({
-    model: MODEL,
+    model: 'claude-sonnet-4-20250514',
     max_tokens: 8192,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   });
-
   const content = response.content[0];
   if (content.type !== 'text') throw new Error('Unexpected response type');
+  return parseJSON(content.text);
+}
 
-  const text = content.text;
+async function callOpenRouter(systemPrompt, userPrompt, model) {
+  if (!OPENROUTER_KEY) throw new Error('No OpenRouter key configured on server');
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'http://localhost:5173',
+      'X-Title': 'Economic Cascade Analyzer',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 8192,
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`OpenRouter error (${res.status}): ${text}`);
+  }
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('No content in OpenRouter response');
+  return parseJSON(text);
+}
 
-  // Extract JSON from response (handle markdown code blocks)
-  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const jsonStr = jsonMatch ? jsonMatch[1].trim() : text.trim();
-
+function parseJSON(text) {
+  let cleaned = text;
+  cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const jsonStr = jsonMatch ? jsonMatch[1].trim() : cleaned.trim();
   try {
     return JSON.parse(jsonStr);
-  } catch (e) {
+  } catch {
     console.error('Failed to parse LLM JSON. Raw:', text.slice(0, 500));
-    throw new Error('LLM returned invalid JSON');
+    throw new Error('LLM returned invalid JSON — please try again');
   }
 }
 
-// ─── CONSISTENCY ───
+// ─── PROMPTS ───
 
 const CONSISTENCY_SYSTEM = `You are an expert economic analyst. You will be given a news event, a list of news sources the user selected, and REAL ARTICLES fetched from news APIs.
 
@@ -67,24 +100,6 @@ Rules:
 - agreement_percentage = (supporting sources / total sources that mention the topic) × 100
 - If no articles were found, set no_sources_found to true and return empty facts
 - Return ONLY the JSON object, no markdown, no explanation`;
-
-export async function analyzeConsistency(event, sources) {
-  const articles = await fetchArticles(event, sources);
-  const articleText = formatArticlesForLLM(articles);
-
-  const userPrompt = `Event: "${event}"
-Selected sources: ${sources.join(', ')}
-
-=== REAL ARTICLES FROM NEWS API ===
-${articleText}
-=== END ARTICLES ===
-
-Analyze these real articles and produce the consistency report JSON.`;
-
-  return callLLM(CONSISTENCY_SYSTEM, userPrompt);
-}
-
-// ─── CASCADE ───
 
 const CASCADE_SYSTEM = `You are an expert economic analyst specializing in cascading impact analysis. You will be given a news event and REAL ARTICLES about it.
 
@@ -124,24 +139,6 @@ Rules:
 - Hidden factors must have a valid hidden_factor_category
 - Realistic severity and confidence scores based on article evidence
 - Return ONLY the JSON object, no markdown, no explanation`;
-
-export async function analyzeCascade(event, sources) {
-  const articles = await fetchArticles(event, sources);
-  const articleText = formatArticlesForLLM(articles);
-
-  const userPrompt = `Event: "${event}"
-Sources: ${sources.join(', ')}
-
-=== REAL ARTICLES FROM NEWS API ===
-${articleText}
-=== END ARTICLES ===
-
-Based on these real articles, produce the cascading impact breakdown JSON.`;
-
-  return callLLM(CASCADE_SYSTEM, userPrompt);
-}
-
-// ─── SUMMARY ───
 
 const SUMMARY_SYSTEM = `You are an expert economic analyst. You will be given a news event and REAL ARTICLES about it.
 
@@ -187,18 +184,34 @@ Rules:
 - 2-4 hidden factors
 - Return ONLY the JSON object, no markdown, no explanation`;
 
-export async function analyzeSummary(event, sources) {
-  const articles = await fetchArticles(event, sources);
-  const articleText = formatArticlesForLLM(articles);
+// ─── EXPORTS ───
 
-  const userPrompt = `Event: "${event}"
+function buildUserPrompt(event, sources, articleText) {
+  return `Event: "${event}"
 Sources: ${sources.join(', ')}
 
 === REAL ARTICLES FROM NEWS API ===
 ${articleText}
-=== END ARTICLES ===
+=== END ARTICLES ===`;
+}
 
-Based on these real articles, produce the summary infographic JSON with chart data.`;
+export async function analyzeConsistency(event, sources, opts = {}) {
+  const articles = await fetchArticles(event, sources, opts.newsApiKey);
+  const articleText = formatArticlesForLLM(articles);
+  const prompt = buildUserPrompt(event, sources, articleText) + '\n\nAnalyze these real articles and produce the consistency report JSON.';
+  return callLLM(CONSISTENCY_SYSTEM, prompt, opts);
+}
 
-  return callLLM(SUMMARY_SYSTEM, userPrompt);
+export async function analyzeCascade(event, sources, opts = {}) {
+  const articles = await fetchArticles(event, sources, opts.newsApiKey);
+  const articleText = formatArticlesForLLM(articles);
+  const prompt = buildUserPrompt(event, sources, articleText) + '\n\nBased on these real articles, produce the cascading impact breakdown JSON.';
+  return callLLM(CASCADE_SYSTEM, prompt, opts);
+}
+
+export async function analyzeSummary(event, sources, opts = {}) {
+  const articles = await fetchArticles(event, sources, opts.newsApiKey);
+  const articleText = formatArticlesForLLM(articles);
+  const prompt = buildUserPrompt(event, sources, articleText) + '\n\nBased on these real articles, produce the summary infographic JSON with chart data.';
+  return callLLM(SUMMARY_SYSTEM, prompt, opts);
 }
