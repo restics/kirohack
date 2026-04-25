@@ -1,55 +1,49 @@
 import type { ConsistencyReport, CascadeData, SummaryData } from "../types/index";
-import { mockConsistencyReport, mockCascadeData, mockSummaryData } from "./mockData";
 
 export interface ApiClient {
-  analyzeEvent(
-    event: string,
-    sources: string[]
-  ): Promise<{
-    consistencyReport: ConsistencyReport;
-    cascadeData: CascadeData;
-    summaryData: SummaryData;
-  }>;
   fetchConsistency(event: string, sources: string[]): Promise<ConsistencyReport>;
   fetchCascade(event: string, sources: string[]): Promise<CascadeData>;
   fetchSummary(event: string, sources: string[]): Promise<SummaryData>;
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    let message = `Request failed (${res.status})`;
+    try {
+      const err = (await res.json()) as { error?: string };
+      if (err.error) message = err.error;
+    } catch {
+      // use default message
+    }
+    throw new Error(message);
+  }
+
+  return res.json() as Promise<T>;
 }
 
-class MockApiClient implements ApiClient {
-  async fetchConsistency(_event: string, _sources: string[]): Promise<ConsistencyReport> {
-    await delay(1500);
-    return structuredClone(mockConsistencyReport);
+class RealApiClient implements ApiClient {
+  async fetchConsistency(event: string, sources: string[]): Promise<ConsistencyReport> {
+    return postJson<ConsistencyReport>("/api/consistency", { event, sources });
   }
 
-  async fetchCascade(_event: string, _sources: string[]): Promise<CascadeData> {
-    await delay(2000);
-    return structuredClone(mockCascadeData);
+  async fetchCascade(event: string, sources: string[]): Promise<CascadeData> {
+    return postJson<CascadeData>("/api/cascade", { event, sources });
   }
 
-  async fetchSummary(_event: string, _sources: string[]): Promise<SummaryData> {
-    await delay(2500);
-    return structuredClone(mockSummaryData);
-  }
-
-  async analyzeEvent(
-    event: string,
-    sources: string[]
-  ): Promise<{
-    consistencyReport: ConsistencyReport;
-    cascadeData: CascadeData;
-    summaryData: SummaryData;
-  }> {
-    const consistencyReport = await this.fetchConsistency(event, sources);
-    const cascadeData = await this.fetchCascade(event, sources);
-    const summaryData = await this.fetchSummary(event, sources);
-    return { consistencyReport, cascadeData, summaryData };
+  async fetchSummary(event: string, sources: string[]): Promise<SummaryData> {
+    return postJson<SummaryData>("/api/summary", { event, sources });
   }
 }
 
-export function createMockApiClient(): ApiClient {
-  return new MockApiClient();
+export function createApiClient(): ApiClient {
+  return new RealApiClient();
 }
+
+// Backward-compatible alias
+export const createMockApiClient = createApiClient;

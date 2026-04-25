@@ -5,12 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest --run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.91.1",
     "chart.js": "^4.5.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "fast-check": "^4.7.0",
     "react": "^19.2.5",
     "react-chartjs-2": "^5.3.1",
