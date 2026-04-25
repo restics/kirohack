@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest --run",
+    "test:api": "vitest --run --config vitest.api.config.ts",
+    "test:all": "vitest --run && vitest --run --config vitest.api.config.ts",
     "server": "node node_modules/tsx/dist/cli.mjs server/index.ts",
     "server:dev": "node node_modules/tsx/dist/cli.mjs watch server/index.ts"
   },

@@ -15,7 +15,10 @@ export interface ApiClient {
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(path, {
+  // In production VITE_API_URL points to the Railway backend.
+  // In dev the Vite proxy forwards /api/* to localhost:3001.
+  const base = import.meta.env.VITE_API_URL ?? "";
+  const res = await fetch(`${base}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

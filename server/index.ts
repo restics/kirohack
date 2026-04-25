@@ -401,7 +401,16 @@ Search the web for any additional economic data, forecasts, or expert commentary
 
 const app = express();
 
-app.use(cors({ origin: ["http://localhost:5173", "http://localhost:4173"] }));
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:4173",
+    // Production Vercel URL — set FRONTEND_URL env var on Railway
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    // Allow any vercel.app subdomain for preview deployments
+    /\.vercel\.app$/,
+  ],
+}));
 app.use(express.json());
 
 // Request logger — logs every incoming request
