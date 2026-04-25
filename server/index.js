@@ -34,13 +34,13 @@ app.post('/api/consistency', async (req, res) => {
 
 app.post('/api/cascade', async (req, res) => {
   try {
-    const { event, sources } = req.body;
+    const { event, sources, selectedFacts } = req.body;
     if (!event || !sources?.length) {
       return res.status(400).json({ error: 'Missing event or sources' });
     }
     const opts = extractOpts(req.body);
-    console.log(`[cascade] "${event.slice(0, 60)}..."`);
-    const result = await analyzeCascade(event, sources, opts);
+    console.log(`[cascade] "${event.slice(0, 60)}..." (${selectedFacts?.length ?? 0} verified facts)`);
+    const result = await analyzeCascade(event, sources, opts, selectedFacts);
     res.json(result);
   } catch (err) {
     console.error('[cascade] Error:', err.message);

@@ -174,8 +174,11 @@ export function ConsistencyPage() {
     dispatch({ type: "CONFIRM_CONSISTENCY", selectedFactIds: ids });
     setIsAdvancing(true);
 
+    // Filter to only the facts the user selected
+    const selectedFacts = report ? report.facts.filter(f => selectedFactIds.has(f.id)) : [];
+
     try {
-      const cascadeData = await apiClient.fetchCascade(state.newsEvent, state.selectedSources);
+      const cascadeData = await apiClient.fetchCascade(state.newsEvent, state.selectedSources, selectedFacts);
       dispatch({ type: "RECEIVE_CASCADE", cascadeData });
     } catch (e) {
       dispatch({

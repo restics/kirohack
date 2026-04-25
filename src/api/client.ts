@@ -1,4 +1,4 @@
-import type { ConsistencyReport, CascadeData, SummaryData } from "../types/index";
+import type { ConsistencyReport, CascadeData, SummaryData, FactItem } from "../types/index";
 
 let _userApiKey: string | null = null;
 let _newsApiKey: string | null = null;
@@ -19,7 +19,7 @@ export function getNewsApiKey(): string | null {
 
 export interface ApiClient {
   fetchConsistency(event: string, sources: string[]): Promise<ConsistencyReport>;
-  fetchCascade(event: string, sources: string[]): Promise<CascadeData>;
+  fetchCascade(event: string, sources: string[], selectedFacts?: FactItem[]): Promise<CascadeData>;
   fetchSummary(event: string, sources: string[], cascadeData?: CascadeData): Promise<SummaryData>;
 }
 
@@ -50,8 +50,8 @@ class RealApiClient implements ApiClient {
   async fetchConsistency(event: string, sources: string[]): Promise<ConsistencyReport> {
     return postJson<ConsistencyReport>("/api/consistency", { event, sources });
   }
-  async fetchCascade(event: string, sources: string[]): Promise<CascadeData> {
-    return postJson<CascadeData>("/api/cascade", { event, sources });
+  async fetchCascade(event: string, sources: string[], selectedFacts?: FactItem[]): Promise<CascadeData> {
+    return postJson<CascadeData>("/api/cascade", { event, sources, selectedFacts });
   }
   async fetchSummary(event: string, sources: string[], cascadeData?: CascadeData): Promise<SummaryData> {
     return postJson<SummaryData>("/api/summary", { event, sources, cascadeData });

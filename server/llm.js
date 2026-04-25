@@ -229,10 +229,20 @@ export async function analyzeConsistency(event, sources, opts = {}) {
   return validateConsistency(raw);
 }
 
-export async function analyzeCascade(event, sources, opts = {}) {
+export async function analyzeCascade(event, sources, opts = {}, selectedFacts = null) {
   const articles = await fetchArticles(event, sources, opts.newsApiKey);
   const articleText = formatArticlesForLLM(articles);
-  const prompt = buildUserPrompt(event, sources, articleText) + '\n\nBased on these real articles, produce the cascading impact breakdown JSON.';
+
+  // Build facts context so cascade is grounded in verified facts from step 2
+  let factsContext = '';
+  if (Array.isArray(selectedFacts) && selectedFacts.length > 0) {
+    const factsList = selectedFacts.map(f =>
+      `[${f.id}] "${f.statement}" (${f.agreement_percentage}% agreement, ${f.status})`
+    ).join('\n');
+    factsContext = `\n\n=== VERIFIED FACTS FROM STEP 2 (base your analysis ONLY on these) ===\n${factsList}\n=== END FACTS ===\nIMPORTANT: Every impact must trace back to one or more of these verified facts via originating_facts. Do NOT invent facts that aren't listed above.`;
+  }
+
+  const prompt = buildUserPrompt(event, sources, articleText) + factsContext + '\n\nBased on these real articles and verified facts, produce the cascading impact breakdown JSON.';
   const raw = await callLLM(CASCADE_SYSTEM, prompt, opts);
   return validateCascade(raw);
 }
